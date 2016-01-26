@@ -1,0 +1,25 @@
+{
+  "name": "canvas-webpack-es6-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArturGodunov/Canvas-webpack-es6-test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArturGodunov/Canvas-webpack-es6-test/issues"
+  },
+  "homepage": "https://github.com/ArturGodunov/Canvas-webpack-es6-test#readme",
+  "devDependencies": {
+    "babel-core": "^6.4.5",
+    "babel-loader": "^6.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "webpack": "^1.12.12"
+  }
+}
