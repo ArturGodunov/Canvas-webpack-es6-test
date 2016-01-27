@@ -1,11 +1,23 @@
 'use strict';
 
-import Scene from './scene';
+let context = document.getElementById('canvas').getContext('2d');
 
-let scene = new Scene();
-let gameLoop = new GameLoop();
+import Loop from './loop';
+import Data from './data';
+import Init from './init';
 
-scene.onload(1);
+let data = new Data();
 
-let tower = new Tower(50, 400, 200, 100);
+data.load([
+    'img/enemies.png',
+    'img/towers.png',
+    'img/bglevel-1.png'
+]);
+
+data.onReady(init);
+
+
+
+
+
 
