@@ -59,18 +59,23 @@ var app =
 
 	var _init2 = _interopRequireDefault(_init);
 
+	var _enemy = __webpack_require__(4);
+
+	var _enemy2 = _interopRequireDefault(_enemy);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var context = document.getElementById('canvas').getContext('2d'),
 	    data = new _data2.default();
 
-	data.load(['img/enemies.png', 'img/towers.png', 'img/bglevel-1.png']);
+	data.load(['img/enemies.png', 'img/towers.png', 'img/shells.png', 'img/bglevel-1.png']);
 
 	data.onReady(_init2.default.startInit);
 
 	exports.context = context;
 	exports.data = data;
 	exports.gameLoop = _gameloop2.default;
+	exports.enemy = _enemy2.default;
 
 /***/ },
 /* 1 */
@@ -90,7 +95,11 @@ var app =
 	    function GameLoop(lastTime) {
 	        _classCallCheck(this, GameLoop);
 
+	        this.gameTime = 0;
 	        this.lastTime = lastTime;
+	        this.enemies = [];
+	        this.enemySpeed = 50; // Speed in pixels per second
+	        this.enemySize = 40;
 
 	        this._frame();
 	    }
@@ -98,22 +107,43 @@ var app =
 	    _createClass(GameLoop, [{
 	        key: '_frame',
 	        value: function _frame() {
-	            //this.now = Date.now();
-	            //this.date = (this.now - this.lastTime) / 1000;
+	            this.now = Date.now();
+	            this.date = (this.now - this.lastTime) / 1000;
 
-	            //this._update();
+	            this._update();
 	            this._render();
 
-	            //this.lastTime = this.now;
-	            //requestAnimationFrame(this._frame());
+	            this.lastTime = this.now;
+	            requestAnimationFrame(this._frame());
 	        }
 	    }, {
 	        key: '_update',
-	        value: function _update() {}
+	        value: function _update() {
+	            this.gameTime += this.date;
+
+	            this._updateEnemies();
+
+	            if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
+	                this.enemies.push(new app.enemy(app.context.width, 100));
+	            }
+	        }
+	    }, {
+	        key: '_updateEnemies',
+	        value: function _updateEnemies() {
+	            for (var i = 0; i < this.enemies.length; i++) {
+	                this.enemies[i].x -= this.enemySpeed * this.date;
+
+	                if (this.enemies[i].x + this.enemySize < 0) {
+	                    this.enemies.splice(i, 1);
+	                    i--;
+	                }
+	            }
+	        }
 	    }, {
 	        key: '_render',
 	        value: function _render() {
 	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
+	            app.context.drawImage(app.data.get('img/towers.png'), 40, 160);
 	        }
 	    }]);
 
@@ -260,6 +290,46 @@ var app =
 	}();
 
 	exports.default = Init;
+	;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Enemy = function () {
+	    function Enemy(x, y) {
+	        _classCallCheck(this, Enemy);
+
+	        this.x = x;
+	        this.y = y;
+
+	        this._appear();
+	    }
+
+	    _createClass(Enemy, [{
+	        key: '_appear',
+	        value: function _appear() {
+	            app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
+	        }
+	    }, {
+	        key: 'die',
+	        value: function die() {}
+	    }]);
+
+	    return Enemy;
+	}();
+
+	exports.default = Enemy;
 	;
 
 /***/ }

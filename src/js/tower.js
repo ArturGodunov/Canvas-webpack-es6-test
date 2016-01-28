@@ -15,7 +15,7 @@ export default class Tower {
 
     }
 
-    fire(x, y) {
-        let shell = new Shell(x, y);
+    fire(xEnemy, yEnemy) {
+        let shell = new Shell(xEnemy, yEnemy);
     }
 };

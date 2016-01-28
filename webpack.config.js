@@ -8,7 +8,7 @@ module.exports = {
         library: 'app'
     },
 
-    watch: true,
+    //watch: true,
 
     //devtool: "source-map"
 
