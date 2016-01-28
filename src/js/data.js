@@ -9,9 +9,9 @@ export default class Data {
 
     load(urlOrArr) {
         if (urlOrArr instanceof Array) {
-            urlOrArr.forEach(function(url) {
-                this._load(url);
-            });
+            urlOrArr.forEach(
+                (url) => { this._load(url);}
+            );
         } else {
             this._load(urlOrArr);
         }

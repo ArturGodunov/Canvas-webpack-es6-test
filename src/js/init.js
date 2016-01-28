@@ -3,17 +3,18 @@
 export default class Init {
 
     constructor() {
-        this.bgLevel = new Image();
-        this.bgLevel.src = data.get('img/bglevel-1.png');
-        context.drawImage(this.bgLevel, 0, 0);
-
         this._playAgain();
         this._reset();
+        this._gameLoop();
+    }
+
+    static startInit() {
+        new Init();
     }
 
     _playAgain() {
         document.getElementById('play-again').addEventListener('click', function() {
-            reset();
+            this._reset();
         });
     }
 
@@ -21,21 +22,7 @@ export default class Init {
 
     }
 
-
-
+    _gameLoop() {
+        new app.gameLoop(Date.now());
+    }
 };
-
-//export default class Scene {
-//
-//    constructor(level) {
-//        this.level = level;
-//
-//        this._onload();
-//    }
-//
-//    _onload(){
-//        this.bgImg = new Image();
-//        this.bgImg.src = `img/scene-${this.level}.jpg`;
-//        this.bgImg.onload = () => context.drawImage(this.bgImg, 0, 0);
-//    }
-//};

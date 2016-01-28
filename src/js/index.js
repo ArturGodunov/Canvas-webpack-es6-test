@@ -1,12 +1,11 @@
 'use strict';
 
-let context = document.getElementById('canvas').getContext('2d');
-
-import Loop from './loop';
+import GameLoop from './gameloop';
 import Data from './data';
 import Init from './init';
 
-let data = new Data();
+let context = document.getElementById('canvas').getContext('2d'),
+    data = new Data();
 
 data.load([
     'img/enemies.png',
@@ -14,7 +13,11 @@ data.load([
     'img/bglevel-1.png'
 ]);
 
-data.onReady(init);
+data.onReady(Init.startInit);
+
+exports.context = context;
+exports.data = data;
+exports.gameLoop = GameLoop;
 
 
 

@@ -4,10 +4,11 @@ module.exports = {
     entry: __dirname + "/src/js/index",
     output: {
         path: __dirname + "/dist/js",
-        filename: "bundle.js"
+        filename: "bundle.js",
+        library: 'app'
     },
 
-    //watch: true,
+    watch: true,
 
     //devtool: "source-map"
 
