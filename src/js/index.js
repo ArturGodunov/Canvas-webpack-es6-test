@@ -3,6 +3,7 @@
 import GameLoop from './gameloop';
 import Data from './data';
 import Init from './init';
+import Tower from './tower.js';
 import Enemy from './enemy';
 
 let context = document.getElementById('canvas').getContext('2d'),
@@ -20,6 +21,7 @@ data.onReady(Init.startInit);
 exports.context = context;
 exports.data = data;
 exports.gameLoop = GameLoop;
+exports.tower = Tower;
 exports.enemy = Enemy;
 
 

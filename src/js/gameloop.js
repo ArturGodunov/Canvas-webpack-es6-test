@@ -3,11 +3,14 @@
 export default class GameLoop {
 
     constructor(lastTime) {
+        this.canvasWidth = document.getElementById('canvas').offsetWidth;
+        this.canvasHeight = document.getElementById('canvas').offsetHeight;
         this.gameTime = 0;
         this.lastTime = lastTime;
         this.enemies = [];
         this.enemySpeed = 50; // Speed in pixels per second
         this.enemySize = 40;
+        this.amountEnemies = 1;
         this.maxAmountEnemiesPass = 30;
         this.amountEnemiesPass = 0;
         this.isGameOver = false;
@@ -39,7 +42,7 @@ export default class GameLoop {
         //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
         //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
         //}
-        if (this.enemies.length < 1) {
+        if (this.enemies.length < this.amountEnemies) {
             this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
         }
 
@@ -47,9 +50,8 @@ export default class GameLoop {
     }
 
     _updateEnemies() {
-        for(let i=0; i<this.enemies.length; i++) {
+        for (let i=0; i<this.enemies.length; i++) {
             this.enemies[i].x -= this.enemySpeed * this.date;
-            console.log(this.enemies[i].x);
 
             if ((this.enemies[i].x + this.enemySize) < 0) {
                 this.enemies.splice(i, 1);
@@ -73,12 +75,18 @@ export default class GameLoop {
     }
 
     _render() {
-        // это очень плохо, переделать. особенно чтобы каждый раз не создавать нового enemy что передвинуть.
-        // насколько я понял, здесь происходит наложение и поэтому видно как враг движется.
-        // разобраться с трансформированием, сохранением,...
-        app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
-        app.context.drawImage(app.data.get('img/towers.png'), 40, 160);
-        new app.enemy(this.enemies[0].x, 100);
+        app.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
+
+        app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
+        new app.tower(40, 160);  //пока хардкорно отрисовывается одна башня
+
+        for (let i=0; i<this.enemies.length; i++) {
+            console.log(this.enemies[i].x, this.enemies[i].y);
+            this.enemies[i].draw();
+            app.context.save();
+            app.context.translate(this.enemies[i].x - this.canvasWidth, 0);
+            app.context.restore();
+        }
     }
 
     _gameOver() {

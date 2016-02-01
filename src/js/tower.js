@@ -8,14 +8,11 @@ export default class Tower {
         this.radius = radius;
         this.cost = cost;
 
-        this._appear();
+        this._draw();
     }
 
-    _appear() {
-
+    _draw() {
+        app.context.drawImage(app.data.get('img/towers.png'), this.x, this.y);
     }
 
-    fire(xEnemy, yEnemy) {
-        let shell = new Shell(xEnemy, yEnemy);
-    }
 };

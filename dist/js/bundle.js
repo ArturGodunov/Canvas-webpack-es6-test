@@ -59,6 +59,10 @@ var app =
 
 	var _init2 = _interopRequireDefault(_init);
 
+	var _tower = __webpack_require__(5);
+
+	var _tower2 = _interopRequireDefault(_tower);
+
 	var _enemy = __webpack_require__(4);
 
 	var _enemy2 = _interopRequireDefault(_enemy);
@@ -75,6 +79,7 @@ var app =
 	exports.context = context;
 	exports.data = data;
 	exports.gameLoop = _gameloop2.default;
+	exports.tower = _tower2.default;
 	exports.enemy = _enemy2.default;
 
 /***/ },
@@ -95,11 +100,14 @@ var app =
 	    function GameLoop(lastTime) {
 	        _classCallCheck(this, GameLoop);
 
+	        this.canvasWidth = document.getElementById('canvas').offsetWidth;
+	        this.canvasHeight = document.getElementById('canvas').offsetHeight;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
 	        this.enemies = [];
 	        this.enemySpeed = 50; // Speed in pixels per second
 	        this.enemySize = 40;
+	        this.amountEnemies = 1;
 	        this.maxAmountEnemiesPass = 30;
 	        this.amountEnemiesPass = 0;
 	        this.isGameOver = false;
@@ -134,7 +142,7 @@ var app =
 	            //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
 	            //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            //}
-	            if (this.enemies.length < 1) {
+	            if (this.enemies.length < this.amountEnemies) {
 	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            }
 
@@ -145,7 +153,6 @@ var app =
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
 	                this.enemies[i].x -= this.enemySpeed * this.date;
-	                console.log(this.enemies[i].x);
 
 	                if (this.enemies[i].x + this.enemySize < 0) {
 	                    this.enemies.splice(i, 1);
@@ -171,12 +178,18 @@ var app =
 	    }, {
 	        key: '_render',
 	        value: function _render() {
-	            // это очень плохо, переделать. особенно чтобы каждый раз не создавать нового enemy что передвинуть.
-	            // насколько я понял, здесь происходит наложение и поэтому видно как враг движется.
-	            // разобраться с трансформированием, сохранением,...
-	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
-	            app.context.drawImage(app.data.get('img/towers.png'), 40, 160);
-	            new app.enemy(this.enemies[0].x, 100);
+	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
+	            new app.tower(40, 160); //пока хардкорно отрисовывается одна башня
+
+	            for (var i = 0; i < this.enemies.length; i++) {
+	                console.log(this.enemies[i].x, this.enemies[i].y);
+	                this.enemies[i].draw();
+	                app.context.save();
+	                app.context.translate(this.enemies[i].x - this.canvasWidth, 0);
+	                app.context.restore();
+	            }
 	        }
 	    }, {
 	        key: '_gameOver',
@@ -351,24 +364,58 @@ var app =
 
 	        this.x = x;
 	        this.y = y;
-
-	        this._appear();
 	    }
 
 	    _createClass(Enemy, [{
-	        key: '_appear',
-	        value: function _appear() {
+	        key: 'draw',
+	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
 	        }
-	    }, {
-	        key: 'die',
-	        value: function die() {}
 	    }]);
 
 	    return Enemy;
 	}();
 
 	exports.default = Enemy;
+	;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Tower = function () {
+	    function Tower(x, y, radius, cost) {
+	        _classCallCheck(this, Tower);
+
+	        this.x = x;
+	        this.y = y;
+	        this.radius = radius;
+	        this.cost = cost;
+
+	        this._draw();
+	    }
+
+	    _createClass(Tower, [{
+	        key: '_draw',
+	        value: function _draw() {
+	            app.context.drawImage(app.data.get('img/towers.png'), this.x, this.y);
+	        }
+	    }]);
+
+	    return Tower;
+	}();
+
+	exports.default = Tower;
 	;
 
 /***/ }
