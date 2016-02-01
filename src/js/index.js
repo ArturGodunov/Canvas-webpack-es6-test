@@ -3,8 +3,9 @@
 import GameLoop from './gameloop';
 import Data from './data';
 import Init from './init';
-import Tower from './tower.js';
+import Tower from './tower';
 import Enemy from './enemy';
+import Shell from './shell';
 
 let context = document.getElementById('canvas').getContext('2d'),
     data = new Data();
@@ -23,6 +24,7 @@ exports.data = data;
 exports.gameLoop = GameLoop;
 exports.tower = Tower;
 exports.enemy = Enemy;
+exports.shell = Shell;
 
 
 

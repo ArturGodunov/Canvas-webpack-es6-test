@@ -59,13 +59,17 @@ var app =
 
 	var _init2 = _interopRequireDefault(_init);
 
-	var _tower = __webpack_require__(5);
+	var _tower = __webpack_require__(4);
 
 	var _tower2 = _interopRequireDefault(_tower);
 
-	var _enemy = __webpack_require__(4);
+	var _enemy = __webpack_require__(5);
 
 	var _enemy2 = _interopRequireDefault(_enemy);
+
+	var _shell = __webpack_require__(6);
+
+	var _shell2 = _interopRequireDefault(_shell);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -81,6 +85,7 @@ var app =
 	exports.gameLoop = _gameloop2.default;
 	exports.tower = _tower2.default;
 	exports.enemy = _enemy2.default;
+	exports.shell = _shell2.default;
 
 /***/ },
 /* 1 */
@@ -102,16 +107,14 @@ var app =
 
 	        this.canvasWidth = document.getElementById('canvas').offsetWidth;
 	        this.canvasHeight = document.getElementById('canvas').offsetHeight;
+	        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
 	        this.enemies = [];
-	        this.enemySpeed = 50; // Speed in pixels per second
-	        this.enemySize = 40;
 	        this.amountEnemies = 1;
 	        this.maxAmountEnemiesPass = 30;
 	        this.amountEnemiesPass = 0;
 	        this.isGameOver = false;
-	        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
 
 	        this._frame();
 	    }
@@ -143,7 +146,7 @@ var app =
 	            //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            //}
 	            if (this.enemies.length < this.amountEnemies) {
-	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
+	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 40));
 	            }
 
 	            this._checkCollisions();
@@ -152,9 +155,9 @@ var app =
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].x -= this.enemySpeed * this.date;
+	                this.enemies[i].x -= this.enemies[i].speed * this.date;
 
-	                if (this.enemies[i].x + this.enemySize < 0) {
+	                if (this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
 	                    i--;
 	                    this.amountEnemiesPass++;
@@ -181,7 +184,7 @@ var app =
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
 	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
-	            new app.tower(40, 160); //пока хардкорно отрисовывается одна башня
+	            new app.tower(40, 160, 100); //пока хардкорно отрисовывается одна башня
 
 	            for (var i = 0; i < this.enemies.length; i++) {
 	                console.log(this.enemies[i].x, this.enemies[i].y);
@@ -358,41 +361,6 @@ var app =
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var Enemy = function () {
-	    function Enemy(x, y) {
-	        _classCallCheck(this, Enemy);
-
-	        this.x = x;
-	        this.y = y;
-	    }
-
-	    _createClass(Enemy, [{
-	        key: 'draw',
-	        value: function draw() {
-	            app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
-	        }
-	    }]);
-
-	    return Enemy;
-	}();
-
-	exports.default = Enemy;
-	;
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 	var Tower = function () {
 	    function Tower(x, y, radius, cost) {
 	        _classCallCheck(this, Tower);
@@ -416,6 +384,80 @@ var app =
 	}();
 
 	exports.default = Tower;
+	;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Enemy = function () {
+	    function Enemy(x, y, speed, size) {
+	        _classCallCheck(this, Enemy);
+
+	        this.x = x;
+	        this.y = y;
+	        this.speed = speed; // Speed in pixels per second
+	        this.size = size;
+	    }
+
+	    _createClass(Enemy, [{
+	        key: 'draw',
+	        value: function draw() {
+	            app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
+	        }
+	    }]);
+
+	    return Enemy;
+	}();
+
+	exports.default = Enemy;
+	;
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Shell = function () {
+	    function Shell(x, y, speed, size) {
+	        _classCallCheck(this, Shell);
+
+	        this.x = x;
+	        this.y = y;
+	        this.speed = speed; // Speed in pixels per second
+	        this.size = size;
+	    }
+
+	    _createClass(Shell, [{
+	        key: 'draw',
+	        value: function draw() {
+	            app.context.drawImage(app.data.get('img/shells.png'), this.x, this.y);
+	        }
+	    }]);
+
+	    return Shell;
+	}();
+
+	exports.default = Shell;
 	;
 
 /***/ }

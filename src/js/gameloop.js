@@ -5,16 +5,14 @@ export default class GameLoop {
     constructor(lastTime) {
         this.canvasWidth = document.getElementById('canvas').offsetWidth;
         this.canvasHeight = document.getElementById('canvas').offsetHeight;
+        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
         this.gameTime = 0;
         this.lastTime = lastTime;
         this.enemies = [];
-        this.enemySpeed = 50; // Speed in pixels per second
-        this.enemySize = 40;
         this.amountEnemies = 1;
         this.maxAmountEnemiesPass = 30;
         this.amountEnemiesPass = 0;
         this.isGameOver = false;
-        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
 
         this._frame();
     }
@@ -43,7 +41,7 @@ export default class GameLoop {
         //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
         //}
         if (this.enemies.length < this.amountEnemies) {
-            this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
+            this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 40));
         }
 
         this._checkCollisions();
@@ -51,9 +49,9 @@ export default class GameLoop {
 
     _updateEnemies() {
         for (let i=0; i<this.enemies.length; i++) {
-            this.enemies[i].x -= this.enemySpeed * this.date;
+            this.enemies[i].x -= this.enemies[i].speed * this.date;
 
-            if ((this.enemies[i].x + this.enemySize) < 0) {
+            if ((this.enemies[i].x + this.enemies[i].size) < 0) {
                 this.enemies.splice(i, 1);
                 i--;
                 this.amountEnemiesPass++;
@@ -63,6 +61,7 @@ export default class GameLoop {
 
     _checkCollisions() {
         this._checkEnemiesMaxPass();
+
 
         // Run collision detection for all enemies and shells
 
@@ -78,7 +77,7 @@ export default class GameLoop {
         app.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
 
         app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
-        new app.tower(40, 160);  //пока хардкорно отрисовывается одна башня
+        new app.tower(40, 160, 100);  //пока хардкорно отрисовывается одна башня
 
         for (let i=0; i<this.enemies.length; i++) {
             console.log(this.enemies[i].x, this.enemies[i].y);

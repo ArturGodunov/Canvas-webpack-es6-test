@@ -1,6 +1,6 @@
 'use strict';
 
-export default class Enemy {
+export default class Shell {
 
     constructor(x, y, speed, size) {
         this.x = x;
@@ -10,7 +10,7 @@ export default class Enemy {
     }
 
     draw() {
-        app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
+        app.context.drawImage(app.data.get('img/shells.png'), this.x, this.y);
     }
 
 };
