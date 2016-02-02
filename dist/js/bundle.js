@@ -110,6 +110,8 @@ var app =
 	        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
+	        this.towers = [];
+	        this.shells = [];
 	        this.enemies = [];
 	        this.amountEnemies = 1;
 	        this.maxAmountEnemiesPass = 30;
@@ -124,6 +126,12 @@ var app =
 	        value: function _frame() {
 	            var now = Date.now();
 	            this.date = (now - this.lastTime) / 1000;
+
+	            // пока хардкордно добавляю 1 башню.
+	            // потом сдлелать метод добавления башень.
+	            if (this.towers < 1) {
+	                this.towers.push(new app.tower(340, 160, 100));
+	            }
 
 	            this._update();
 	            this._render();
@@ -141,12 +149,13 @@ var app =
 	            this.gameTime += this.date;
 
 	            this._updateEnemies();
+	            this._updateShells();
 
 	            //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
 	            //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            //}
 	            if (this.enemies.length < this.amountEnemies) {
-	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 40));
+	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50));
 	            }
 
 	            this._checkCollisions();
@@ -155,7 +164,7 @@ var app =
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].x -= this.enemies[i].speed * this.date;
+	                this.enemies[i].move(this.date);
 
 	                if (this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
@@ -165,9 +174,22 @@ var app =
 	            }
 	        }
 	    }, {
+	        key: '_updateShells',
+	        value: function _updateShells() {
+	            for (var i = 0; i < this.shells.length; i++) {
+	                this.shells[i].move(this.date);
+
+	                if (this.shells[i].centerX < 0 || this.shells[i].centerX > this.canvasWidth || this.shells[i].centerY < 0 || this.shells[i].centerY > this.canvasHeight) {
+	                    this.shells.splice(i, 1);
+	                    i--;
+	                }
+	            }
+	        }
+	    }, {
 	        key: '_checkCollisions',
 	        value: function _checkCollisions() {
 	            this._checkEnemiesMaxPass();
+	            this._checkIntersectionCircles();
 
 	            // Run collision detection for all enemies and shells
 	        }
@@ -179,19 +201,40 @@ var app =
 	            }
 	        }
 	    }, {
+	        key: '_checkIntersectionCircles',
+	        value: function _checkIntersectionCircles() {
+	            for (var i = 0; i < this.towers.length; i++) {
+	                for (var j = 0; j < this.enemies.length; j++) {
+	                    var a = Math.pow(this.enemies[j].centerX - this.towers[i].centerX, 2) + Math.pow(this.enemies[j].centerY - this.towers[i].centerY, 2),
+	                        b = Math.pow(this.towers[i].radius, 2);
+	                    if (a <= b) {
+	                        console.log('Enemy ' + j + ' inside radius of tower ' + i);
+	                        //debugger;
+	                        if (this.shells.length < 1) {
+	                            this.shells.push(new app.shell(this.towers[i].centerX, this.towers[i].centerY, 200, 20, this.enemies[j].centerX, this.enemies[j].centerY));
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }, {
 	        key: '_render',
 	        value: function _render() {
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
 	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
-	            new app.tower(40, 160, 100); //пока хардкорно отрисовывается одна башня
+
+	            for (var i = 0; i < this.towers.length; i++) {
+	                this.towers[i].draw();
+	            }
 
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                console.log(this.enemies[i].x, this.enemies[i].y);
+	                //console.log(this.enemies[i].centerX, this.enemies[i].centerY);
 	                this.enemies[i].draw();
-	                app.context.save();
-	                app.context.translate(this.enemies[i].x - this.canvasWidth, 0);
-	                app.context.restore();
+	            }
+
+	            for (var i = 0; i < this.shells.length; i++) {
+	                this.shells[i].draw();
 	            }
 	        }
 	    }, {
@@ -369,14 +412,20 @@ var app =
 	        this.y = y;
 	        this.radius = radius;
 	        this.cost = cost;
-
-	        this._draw();
+	        this.size = 40;
+	        this.centerX = this.x + this.size / 2;
+	        this.centerY = this.y + this.size / 2;
 	    }
 
 	    _createClass(Tower, [{
-	        key: '_draw',
-	        value: function _draw() {
+	        key: 'draw',
+	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/towers.png'), this.x, this.y);
+
+	            app.context.beginPath();
+	            app.context.arc(this.centerX, this.centerY, this.radius, 0, Math.PI * 2);
+	            app.context.strokeStyle = 'red';
+	            app.context.stroke();
 	        }
 	    }]);
 
@@ -401,16 +450,31 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Enemy = function () {
-	    function Enemy(x, y, speed, size) {
+	    function Enemy(x, y, speed) {
 	        _classCallCheck(this, Enemy);
 
 	        this.x = x;
 	        this.y = y;
 	        this.speed = speed; // Speed in pixels per second
-	        this.size = size;
+	        this.size = 40;
+
+	        this._centerCoord();
 	    }
 
 	    _createClass(Enemy, [{
+	        key: '_centerCoord',
+	        value: function _centerCoord() {
+	            this.centerX = this.x + this.size / 2;
+	            this.centerY = this.y + this.size / 2;
+	        }
+	    }, {
+	        key: 'move',
+	        value: function move(date) {
+	            this._centerCoord();
+
+	            this.x -= this.speed * date; // пока движется только по прямой
+	        }
+	    }, {
 	        key: 'draw',
 	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
@@ -438,19 +502,51 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Shell = function () {
-	    function Shell(x, y, speed, size) {
+	    function Shell(centerX, centerY, speed, size, enemyCenterX, enemyCenterY) {
 	        _classCallCheck(this, Shell);
 
-	        this.x = x;
-	        this.y = y;
+	        this.centerX = centerX;
+	        this.centerY = centerY;
 	        this.speed = speed; // Speed in pixels per second
 	        this.size = size;
+	        this.enemyCenterX = enemyCenterX;
+	        this.enemyCenterY = enemyCenterY;
+	        this.angle = Math.atan2(this.centerY - this.enemyCenterY, this.enemyCenterX - this.centerX);
+	        this.startCenterX = this.centerX;
+
+	        this._leftTopCoord();
 	    }
 
 	    _createClass(Shell, [{
+	        key: '_leftTopCoord',
+	        value: function _leftTopCoord() {
+	            this.x = this.centerX - this.size / 2;
+	            this.y = this.centerY - this.size / 2;
+	        }
+	    }, {
+	        key: 'move',
+	        value: function move(date) {
+	            var angle = undefined,
+	                k = 1,
+	                dx = undefined;
+	            if (this.enemyCenterX - this.startCenterX > 0) {
+	                angle = this.angle;
+	            } else {
+	                angle = Math.PI - this.angle;
+	                k = -1;
+	            }
+
+	            dx = Math.sqrt(Math.pow(this.speed * date, 2) / (1 + Math.pow(Math.tan(angle), 2)));
+	            this.centerX += dx * k;
+	            this.centerY -= dx * Math.tan(angle);
+
+	            this._leftTopCoord();
+	        }
+	    }, {
 	        key: 'draw',
 	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/shells.png'), this.x, this.y);
+	            console.log(this.angle);
 	        }
 	    }]);
 
