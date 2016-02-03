@@ -27,8 +27,4 @@ export default class Enemy {
         app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
     }
 
-    die() {
-        new app.explosion(this.centerX, this.centerY)
-    }
-
 };

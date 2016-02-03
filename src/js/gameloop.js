@@ -11,9 +11,10 @@ export default class GameLoop {
         this.towers = [];
         this.shells = [];
         this.enemies = [];
-        this.amountEnemies = 1;
-        this.maxAmountEnemiesPass = 30;
-        this.amountEnemiesPass = 0;
+        this.explosions = [];
+        this.amountEnemies = 1; //общее кол-во врагов на карте
+        this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
+        this.amountEnemiesPass = 0; // начальное кол-во пропущенных врагов
         this.isGameOver = false;
 
         this._frame();
@@ -45,6 +46,7 @@ export default class GameLoop {
 
         this._updateEnemies();
         this._updateShells();
+        this._updateExplosions();
 
         //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
         //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
@@ -80,12 +82,15 @@ export default class GameLoop {
         }
     }
 
+    _updateExplosions() {
+        // с каждым кадром this.amountFramesLive++
+        // если макс, то сплайс
+    }
+
     _checkCollisions() {
         this._checkEnemiesMaxPass();
         this._checkIntersectionCircles();
-
-        // Run collision detection for all enemies and shells!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+        this._checkCollisionsEnemiesShells();
     }
 
     _checkEnemiesMaxPass() {
@@ -97,19 +102,41 @@ export default class GameLoop {
     _checkIntersectionCircles() {
         for (let i=0; i<this.towers.length; i++) {
             for (let j=0; j<this.enemies.length; j++) {
-                let a = Math.pow(this.enemies[j].centerX  - this.towers[i].centerX, 2) +
-                        Math.pow(this.enemies[j].centerY  - this.towers[i].centerY, 2),
+                let enemyCenterX = this.enemies[j].centerX,
+                    enemyCenterY = this.enemies[j].centerY,
+                    towerCenterX = this.towers[i].centerX,
+                    towerCenterY = this.towers[i].centerY,
+                    a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
                     b = Math.pow(this.towers[i].radius, 2);
                 if (a <= b) {
-                    console.log(`Enemy ${j} inside radius of tower ${i}`);
+                    //console.log(`Enemy ${j} inside radius of tower ${i}`);
                     //debugger;
                     if (this.shells.length < 1) {
-                        this.shells.push(new app.shell(
-                            this.towers[i].centerX, this.towers[i].centerY,
-                            this.enemies[j].centerX, this.enemies[j].centerY,
-                            200, 20, 50
-                            ));
+                        this.shells.push(
+                            new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 20, 50)
+                        );
                     }
+                }
+            }
+        }
+    }
+
+    _checkCollisionsEnemiesShells() {
+        for (let i=0; i<this.enemies.length; i++) {
+            for (let j=0; j<this.shells.length; j++) {
+                let shellCenterX = this.shells[j].centerX,
+                    shellCenterY = this.shells[j].centerY,
+                    enemyCenterX = this.enemies[i].centerX,
+                    enemyCenterY = this.enemies[i].centerY,
+                    a = Math.pow(enemyCenterX - shellCenterX, 2) + Math.pow(enemyCenterY - shellCenterY, 2),
+                    b = Math.pow(this.enemies[i].size + this.shells[j].size, 2) / 4;
+                if (a <= b) {
+                    this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
+                    this.enemies.splice(i, 1);
+                    i--;
+                    this.shells.splice(j, 1);
+                    j--;
+                    break;
                 }
             }
         }
@@ -131,6 +158,10 @@ export default class GameLoop {
 
         for (let i=0; i<this.shells.length; i++) {
             this.shells[i].draw();
+        }
+
+        for (let i=0; i<this.explosions.length; i++) {
+            this.explosions[i].draw();
         }
     }
 

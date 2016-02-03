@@ -8,11 +8,10 @@ export default class Explosion {
         this.size = 40;
         this.x = this.centerEnemyX - this.size / 2;
         this.y = this.centerEnemyY - this.size / 2;
-
-        this._draw();
+        this.amountFramesLive = 10; // кол-во кадров в течении которых взрыв будет отрисовываться. потом надо будет переделать на спрайты.
     }
 
-    _draw() {
+    draw() {
         app.context.drawImage(app.data.get('img/explosions.png'), this.x, this.y);
     }
 

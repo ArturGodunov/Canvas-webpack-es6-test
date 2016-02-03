@@ -71,12 +71,16 @@ var app =
 
 	var _shell2 = _interopRequireDefault(_shell);
 
+	var _explosion = __webpack_require__(7);
+
+	var _explosion2 = _interopRequireDefault(_explosion);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var context = document.getElementById('canvas').getContext('2d'),
 	    data = new _data2.default();
 
-	data.load(['img/enemies.png', 'img/towers.png', 'img/shells.png', 'img/bglevel-1.png']);
+	data.load(['img/enemies.png', 'img/towers.png', 'img/shells.png', 'img/explosions.png', 'img/bglevel-1.png']);
 
 	data.onReady(_init2.default.startInit);
 
@@ -86,6 +90,7 @@ var app =
 	exports.tower = _tower2.default;
 	exports.enemy = _enemy2.default;
 	exports.shell = _shell2.default;
+	exports.explosion = _explosion2.default;
 
 /***/ },
 /* 1 */
@@ -113,9 +118,10 @@ var app =
 	        this.towers = [];
 	        this.shells = [];
 	        this.enemies = [];
-	        this.amountEnemies = 1;
-	        this.maxAmountEnemiesPass = 30;
-	        this.amountEnemiesPass = 0;
+	        this.explosions = [];
+	        this.amountEnemies = 1; //общее кол-во врагов на карте
+	        this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
+	        this.amountEnemiesPass = 0; // начальное кол-во пропущенных врагов
 	        this.isGameOver = false;
 
 	        this._frame();
@@ -150,12 +156,13 @@ var app =
 
 	            this._updateEnemies();
 	            this._updateShells();
+	            this._updateExplosions();
 
 	            //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
 	            //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            //}
 	            if (this.enemies.length < this.amountEnemies) {
-	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50));
+	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 100));
 	            }
 
 	            this._checkCollisions();
@@ -186,12 +193,17 @@ var app =
 	            }
 	        }
 	    }, {
+	        key: '_updateExplosions',
+	        value: function _updateExplosions() {
+	            // с каждым кадром this.amountFramesLive++
+	            // если макс, то сплайс
+	        }
+	    }, {
 	        key: '_checkCollisions',
 	        value: function _checkCollisions() {
 	            this._checkEnemiesMaxPass();
 	            this._checkIntersectionCircles();
-
-	            // Run collision detection for all enemies and shells
+	            this._checkCollisionsEnemiesShells();
 	        }
 	    }, {
 	        key: '_checkEnemiesMaxPass',
@@ -205,14 +217,40 @@ var app =
 	        value: function _checkIntersectionCircles() {
 	            for (var i = 0; i < this.towers.length; i++) {
 	                for (var j = 0; j < this.enemies.length; j++) {
-	                    var a = Math.pow(this.enemies[j].centerX - this.towers[i].centerX, 2) + Math.pow(this.enemies[j].centerY - this.towers[i].centerY, 2),
+	                    var enemyCenterX = this.enemies[j].centerX,
+	                        enemyCenterY = this.enemies[j].centerY,
+	                        towerCenterX = this.towers[i].centerX,
+	                        towerCenterY = this.towers[i].centerY,
+	                        a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
 	                        b = Math.pow(this.towers[i].radius, 2);
 	                    if (a <= b) {
-	                        console.log('Enemy ' + j + ' inside radius of tower ' + i);
+	                        //console.log(`Enemy ${j} inside radius of tower ${i}`);
 	                        //debugger;
 	                        if (this.shells.length < 1) {
-	                            this.shells.push(new app.shell(this.towers[i].centerX, this.towers[i].centerY, 200, 20, this.enemies[j].centerX, this.enemies[j].centerY));
+	                            this.shells.push(new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 20, 50));
 	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }, {
+	        key: '_checkCollisionsEnemiesShells',
+	        value: function _checkCollisionsEnemiesShells() {
+	            for (var i = 0; i < this.enemies.length; i++) {
+	                for (var j = 0; j < this.shells.length; j++) {
+	                    var shellCenterX = this.shells[j].centerX,
+	                        shellCenterY = this.shells[j].centerY,
+	                        enemyCenterX = this.enemies[i].centerX,
+	                        enemyCenterY = this.enemies[i].centerY,
+	                        a = Math.pow(enemyCenterX - shellCenterX, 2) + Math.pow(enemyCenterY - shellCenterY, 2),
+	                        b = Math.pow(this.enemies[i].size + this.shells[j].size, 2) / 4;
+	                    if (a <= b) {
+	                        this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
+	                        this.enemies.splice(i, 1);
+	                        i--;
+	                        this.shells.splice(j, 1);
+	                        j--;
+	                        break;
 	                    }
 	                }
 	            }
@@ -235,6 +273,10 @@ var app =
 
 	            for (var i = 0; i < this.shells.length; i++) {
 	                this.shells[i].draw();
+	            }
+
+	            for (var i = 0; i < this.explosions.length; i++) {
+	                this.explosions[i].draw();
 	            }
 	        }
 	    }, {
@@ -450,13 +492,14 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Enemy = function () {
-	    function Enemy(x, y, speed) {
+	    function Enemy(x, y, speed, health) {
 	        _classCallCheck(this, Enemy);
 
 	        this.x = x;
 	        this.y = y;
 	        this.speed = speed; // Speed in pixels per second
 	        this.size = 40;
+	        this.health = health;
 
 	        this._centerCoord();
 	    }
@@ -502,17 +545,18 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Shell = function () {
-	    function Shell(centerX, centerY, speed, size, enemyCenterX, enemyCenterY) {
+	    function Shell(centerX, centerY, enemyCenterX, enemyCenterY, speed, size, damage) {
 	        _classCallCheck(this, Shell);
 
 	        this.centerX = centerX;
 	        this.centerY = centerY;
-	        this.speed = speed; // Speed in pixels per second
-	        this.size = size;
 	        this.enemyCenterX = enemyCenterX;
 	        this.enemyCenterY = enemyCenterY;
 	        this.angle = Math.atan2(this.centerY - this.enemyCenterY, this.enemyCenterX - this.centerX);
 	        this.startCenterX = this.centerX;
+	        this.speed = speed; // Speed in pixels per second
+	        this.size = size;
+	        this.damage = damage;
 
 	        this._leftTopCoord();
 	    }
@@ -554,6 +598,45 @@ var app =
 	}();
 
 	exports.default = Shell;
+	;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Explosion = function () {
+	    function Explosion(centerEnemyX, centerEnemyY) {
+	        _classCallCheck(this, Explosion);
+
+	        this.centerEnemyX = centerEnemyX;
+	        this.centerEnemyY = centerEnemyY;
+	        this.size = 40;
+	        this.x = this.centerEnemyX - this.size / 2;
+	        this.y = this.centerEnemyY - this.size / 2;
+	        this.amountFramesLive = 10; // кол-во кадров в течении которых взрыв будет отрисовываться. потом надо будет переделать на спрайты.
+	    }
+
+	    _createClass(Explosion, [{
+	        key: 'draw',
+	        value: function draw() {
+	            app.context.drawImage(app.data.get('img/explosions.png'), this.x, this.y);
+	        }
+	    }]);
+
+	    return Explosion;
+	}();
+
+	exports.default = Explosion;
 	;
 
 /***/ }
