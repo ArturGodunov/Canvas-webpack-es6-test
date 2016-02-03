@@ -136,7 +136,7 @@ var app =
 	            // пока хардкордно добавляю 1 башню.
 	            // потом сдлелать метод добавления башень.
 	            if (this.towers < 1) {
-	                this.towers.push(new app.tower(340, 160, 100));
+	                this.towers.push(new app.tower(340, 160, 100, 25));
 	            }
 
 	            this._update();
@@ -157,12 +157,13 @@ var app =
 	            this._updateEnemies();
 	            this._updateShells();
 	            this._updateExplosions();
+	            this._updateTowers();
 
 	            //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
 	            //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
 	            //}
 	            if (this.enemies.length < this.amountEnemies) {
-	                this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 100));
+	                this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
 	            }
 
 	            this._checkCollisions();
@@ -195,8 +196,20 @@ var app =
 	    }, {
 	        key: '_updateExplosions',
 	        value: function _updateExplosions() {
-	            // с каждым кадром this.amountFramesLive++
-	            // если макс, то сплайс
+	            for (var i = 0; i < this.explosions.length; i++) {
+	                this.explosions[i].amountFramesDrawing++;
+	                if (this.explosions[i].amountFramesDrawing === this.explosions[i].maxAmountFramesDrawing) {
+	                    this.explosions.splice(i, 1);
+	                    i--;
+	                }
+	            }
+	        }
+	    }, {
+	        key: '_updateTowers',
+	        value: function _updateTowers() {
+	            for (var i = 0; i < this.towers.length; i++) {
+	                this.towers[i].framesBeforeShoot++;
+	            }
 	        }
 	    }, {
 	        key: '_checkCollisions',
@@ -224,10 +237,9 @@ var app =
 	                        a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
 	                        b = Math.pow(this.towers[i].radius, 2);
 	                    if (a <= b) {
-	                        //console.log(`Enemy ${j} inside radius of tower ${i}`);
-	                        //debugger;
-	                        if (this.shells.length < 1) {
-	                            this.shells.push(new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 20, 50));
+	                        if (this.towers[i].framesBeforeShoot >= this.towers[i].rate) {
+	                            this.shells.push(new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50));
+	                            this.towers[i].framesBeforeShoot = 0;
 	                        }
 	                    }
 	                }
@@ -245,9 +257,12 @@ var app =
 	                        a = Math.pow(enemyCenterX - shellCenterX, 2) + Math.pow(enemyCenterY - shellCenterY, 2),
 	                        b = Math.pow(this.enemies[i].size + this.shells[j].size, 2) / 4;
 	                    if (a <= b) {
-	                        this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
-	                        this.enemies.splice(i, 1);
-	                        i--;
+	                        this.enemies[i].health -= this.shells[j].damage;
+	                        if (this.enemies[i].health <= 0) {
+	                            this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
+	                            this.enemies.splice(i, 1);
+	                            i--;
+	                        }
 	                        this.shells.splice(j, 1);
 	                        j--;
 	                        break;
@@ -447,16 +462,17 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Tower = function () {
-	    function Tower(x, y, radius, cost) {
+	    function Tower(x, y, radius, rate) {
 	        _classCallCheck(this, Tower);
 
 	        this.x = x;
 	        this.y = y;
 	        this.radius = radius;
-	        this.cost = cost;
 	        this.size = 40;
 	        this.centerX = this.x + this.size / 2;
 	        this.centerY = this.y + this.size / 2;
+	        this.rate = rate;
+	        this.framesBeforeShoot = this.rate;
 	    }
 
 	    _createClass(Tower, [{
@@ -590,7 +606,6 @@ var app =
 	        key: 'draw',
 	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/shells.png'), this.x, this.y);
-	            console.log(this.angle);
 	        }
 	    }]);
 
@@ -623,7 +638,8 @@ var app =
 	        this.size = 40;
 	        this.x = this.centerEnemyX - this.size / 2;
 	        this.y = this.centerEnemyY - this.size / 2;
-	        this.amountFramesLive = 10; // кол-во кадров в течении которых взрыв будет отрисовываться. потом надо будет переделать на спрайты.
+	        this.maxAmountFramesDrawing = 10; // кол-во кадров в течении которых взрыв будет отрисовываться. потом надо будет переделать на спрайты.
+	        this.amountFramesDrawing = 0;
 	    }
 
 	    _createClass(Explosion, [{

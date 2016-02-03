@@ -2,14 +2,15 @@
 
 export default class Tower {
 
-    constructor(x, y, radius, cost) {
+    constructor(x, y, radius, rate) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.cost = cost;
         this.size = 40;
         this.centerX = this.x + this.size / 2;
         this.centerY = this.y + this.size / 2;
+        this.rate = rate;
+        this.framesBeforeShoot = this.rate;
     }
 
     draw() {

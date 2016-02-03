@@ -27,7 +27,7 @@ export default class GameLoop {
         // пока хардкордно добавляю 1 башню.
         // потом сдлелать метод добавления башень.
         if (this.towers < 1) {
-            this.towers.push(new app.tower(340, 160, 100));
+            this.towers.push(new app.tower(340, 160, 100, 25));
         }
 
         this._update();
@@ -47,12 +47,13 @@ export default class GameLoop {
         this._updateEnemies();
         this._updateShells();
         this._updateExplosions();
+        this._updateTowers();
 
         //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
         //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
         //}
         if (this.enemies.length < this.amountEnemies) {
-            this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 100));
+            this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
         }
 
         this._checkCollisions();
@@ -83,8 +84,19 @@ export default class GameLoop {
     }
 
     _updateExplosions() {
-        // с каждым кадром this.amountFramesLive++
-        // если макс, то сплайс
+        for (let i=0; i<this.explosions.length; i++) {
+            this.explosions[i].amountFramesDrawing++;
+            if (this.explosions[i].amountFramesDrawing === this.explosions[i].maxAmountFramesDrawing) {
+                this.explosions.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    _updateTowers() {
+        for (let i=0; i<this.towers.length; i++) {
+            this.towers[i].framesBeforeShoot++;
+        }
     }
 
     _checkCollisions() {
@@ -109,12 +121,11 @@ export default class GameLoop {
                     a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
                     b = Math.pow(this.towers[i].radius, 2);
                 if (a <= b) {
-                    //console.log(`Enemy ${j} inside radius of tower ${i}`);
-                    //debugger;
-                    if (this.shells.length < 1) {
+                    if (this.towers[i].framesBeforeShoot >= this.towers[i].rate) {
                         this.shells.push(
-                            new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 20, 50)
+                            new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50)
                         );
+                        this.towers[i].framesBeforeShoot = 0;
                     }
                 }
             }
@@ -131,9 +142,12 @@ export default class GameLoop {
                     a = Math.pow(enemyCenterX - shellCenterX, 2) + Math.pow(enemyCenterY - shellCenterY, 2),
                     b = Math.pow(this.enemies[i].size + this.shells[j].size, 2) / 4;
                 if (a <= b) {
-                    this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
-                    this.enemies.splice(i, 1);
-                    i--;
+                    this.enemies[i].health -= this.shells[j].damage;
+                    if (this.enemies[i].health <= 0) {
+                        this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
+                        this.enemies.splice(i, 1);
+                        i--;
+                    }
                     this.shells.splice(j, 1);
                     j--;
                     break;

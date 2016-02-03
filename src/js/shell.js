@@ -39,7 +39,6 @@ export default class Shell {
 
     draw() {
         app.context.drawImage(app.data.get('img/shells.png'), this.x, this.y);
-        console.log(this.angle);
     }
 
 };
