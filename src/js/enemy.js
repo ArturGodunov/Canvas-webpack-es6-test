@@ -2,11 +2,12 @@
 
 export default class Enemy {
 
-    constructor(x, y, speed) {
+    constructor(x, y, speed, health) {
         this.x = x;
         this.y = y;
         this.speed = speed; // Speed in pixels per second
         this.size = 40;
+        this.health = health;
 
         this._centerCoord();
     }
@@ -24,6 +25,10 @@ export default class Enemy {
 
     draw() {
         app.context.drawImage(app.data.get('img/enemies.png'), this.x, this.y);
+    }
+
+    die() {
+        new app.explosion(this.centerX, this.centerY)
     }
 
 };

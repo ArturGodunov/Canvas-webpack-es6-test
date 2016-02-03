@@ -50,7 +50,7 @@ export default class GameLoop {
         //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
         //}
         if (this.enemies.length < this.amountEnemies) {
-            this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50));
+            this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100, 50, 100));
         }
 
         this._checkCollisions();
@@ -84,7 +84,7 @@ export default class GameLoop {
         this._checkEnemiesMaxPass();
         this._checkIntersectionCircles();
 
-        // Run collision detection for all enemies and shells
+        // Run collision detection for all enemies and shells!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     }
 
@@ -105,8 +105,9 @@ export default class GameLoop {
                     //debugger;
                     if (this.shells.length < 1) {
                         this.shells.push(new app.shell(
-                            this.towers[i].centerX, this.towers[i].centerY, 200, 20,
-                            this.enemies[j].centerX, this.enemies[j].centerY
+                            this.towers[i].centerX, this.towers[i].centerY,
+                            this.enemies[j].centerX, this.enemies[j].centerY,
+                            200, 20, 50
                             ));
                     }
                 }

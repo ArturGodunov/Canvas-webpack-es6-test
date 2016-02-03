@@ -2,15 +2,16 @@
 
 export default class Shell {
 
-    constructor(centerX, centerY, speed, size, enemyCenterX, enemyCenterY) {
+    constructor(centerX, centerY, enemyCenterX, enemyCenterY, speed, size, damage) {
         this.centerX = centerX;
         this.centerY = centerY;
-        this.speed = speed; // Speed in pixels per second
-        this.size = size;
         this.enemyCenterX = enemyCenterX;
         this.enemyCenterY = enemyCenterY;
         this.angle = Math.atan2((this.centerY - this.enemyCenterY),(this.enemyCenterX - this.centerX));
         this.startCenterX = this.centerX;
+        this.speed = speed; // Speed in pixels per second
+        this.size = size;
+        this.damage = damage;
 
         this._leftTopCoord();
     }

@@ -6,6 +6,7 @@ import Init from './init';
 import Tower from './tower';
 import Enemy from './enemy';
 import Shell from './shell';
+import Explosion from './explosion';
 
 let context = document.getElementById('canvas').getContext('2d'),
     data = new Data();
@@ -14,6 +15,7 @@ data.load([
     'img/enemies.png',
     'img/towers.png',
     'img/shells.png',
+    'img/explosions.png',
     'img/bglevel-1.png'
 ]);
 
@@ -25,6 +27,7 @@ exports.gameLoop = GameLoop;
 exports.tower = Tower;
 exports.enemy = Enemy;
 exports.shell = Shell;
+exports.explosion = Explosion;
 
 
 
