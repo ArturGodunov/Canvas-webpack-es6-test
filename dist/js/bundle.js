@@ -98,6 +98,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing game loop.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -107,6 +109,12 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var GameLoop = function () {
+
+	    /**
+	     * Create game loop.
+	     * @param {number} lastTime - Timestamp of starting game loop.
+	     * */
+
 	    function GameLoop(lastTime) {
 	        _classCallCheck(this, GameLoop);
 
@@ -119,11 +127,11 @@ var app =
 	        this.shells = [];
 	        this.enemies = [];
 	        this.explosions = [];
-	        this.amountEnemies = 0; // кол-во врагов на карте
-	        this.maxAmountEnemies = 10; // max кол-во врагов на карте
-	        this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
-	        this.amountEnemiesPass = 0; // кол-во пропущенных врагов
-	        this.timeAddEnemy = 1; // time to first enemy
+	        this.amountEnemies = 0; /** Amount enemies on map.*/
+	        this.maxAmountEnemies = 10; /** Max amount enemies on map.*/
+	        this.maxAmountEnemiesPass = 30; /** Max amount enemies passing map.*/
+	        this.amountEnemiesPass = 0; /** Amount enemies passing map.*/
+	        this.timeAddEnemy = 1; /** Time to adding first enemy.*/
 	        this.isGameOver = false;
 
 	        this._frame();
@@ -133,7 +141,7 @@ var app =
 	        key: '_frame',
 	        value: function _frame() {
 	            var now = Date.now();
-	            this.date = (now - this.lastTime) / 1000;
+	            this.incrementDate = (now - this.lastTime) / 1000;
 
 	            this._update();
 	            this._render();
@@ -143,47 +151,47 @@ var app =
 	            }
 
 	            this.lastTime = now;
-	            requestAnimationFrame(this._frame.bind(this)); //bind от потери контекста (иначе будет в контексте window)
+	            requestAnimationFrame(this._frame.bind(this)); /** Bind the context of this class, else the context will be 'window'.*/
 	        }
 	    }, {
 	        key: '_update',
 	        value: function _update() {
-	            this.gameTime += this.date;
+	            this.gameTime += this.incrementDate;
 
 	            this._updateEnemies();
 	            this._updateShells();
 	            this._updateExplosions();
 
-	            // пока хардкордно добавляю башни.
-	            // потом сдлелать метод добавления башень.
 	            /**
-	             * Create new towers
+	             * Create new towers.
+	             *
+	             * @todo Create method of adding towers.
 	             * */
 	            if (this.towers < 2) {
 	                /**
-	                 * @param {number} x
-	                 * @param {number} y
-	                 * @param {number} radius
-	                 * @param {number} rate - Time to next shoot
+	                 * @param {number} x - In pixels.
+	                 * @param {number} y - In pixels.
+	                 * @param {number} radius - In pixels.
+	                 * @param {number} rate - Time to next shoot.
 	                 * */
 	                this.towers.push(new app.tower(340, 160, 100, 1));
 	                this.towers.push(new app.tower(200, 60, 100, 1));
 	            }
 
 	            /**
-	             * Add new enemies
+	             * Add new enemies.
 	             * */
 	            if (this.amountEnemies < this.maxAmountEnemies) {
 	                if (this.gameTime > this.timeAddEnemy) {
 	                    /**
-	                     * @param {number} x
-	                     * @param {number} y
-	                     * @param {number} speed - In pixels per second
-	                     * @param {number} health
+	                     * @param {number} x - In pixels.
+	                     * @param {number} y - In pixels.
+	                     * @param {number} speed - In pixels per second.
+	                     * @param {number} health.
 	                     * */
 	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
 	                    this.amountEnemies++;
-	                    this.timeAddEnemy += 1; // time to next enemy
+	                    this.timeAddEnemy += 1; /** Time to adding next enemy.*/
 	                }
 	            }
 
@@ -193,7 +201,7 @@ var app =
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].move(this.date);
+	                this.enemies[i].move(this.incrementDate);
 
 	                if (this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
@@ -206,7 +214,7 @@ var app =
 	        key: '_updateShells',
 	        value: function _updateShells() {
 	            for (var i = 0; i < this.shells.length; i++) {
-	                this.shells[i].move(this.date);
+	                this.shells[i].move(this.incrementDate);
 
 	                if (this.shells[i].centerX < 0 || this.shells[i].centerX > this.canvasWidth || this.shells[i].centerY < 0 || this.shells[i].centerY > this.canvasHeight) {
 	                    this.shells.splice(i, 1);
@@ -256,13 +264,13 @@ var app =
 	                        }
 	                        if (this.gameTime > this.towers[i].timeDetectionFirstEnemy + this.towers[i].timeNextShoot) {
 	                            /**
-	                             * @param {number} towerCenterX
-	                             * @param {number} towerCenterY
-	                             * @param {number} enemyCenterX
-	                             * @param {number} enemyCenterY
-	                             * @param {number} speed - In pixels per second
-	                             * @param {number} size
-	                             * @param {number} damage
+	                             * @param {number} towerCenterX - In pixels.
+	                             * @param {number} towerCenterY - In pixels.
+	                             * @param {number} enemyCenterX - In pixels.
+	                             * @param {number} enemyCenterY - In pixels.
+	                             * @param {number} speed - In pixels per second.
+	                             * @param {number} size - In pixels.
+	                             * @param {number} damage.
 	                             * */
 	                            this.shells.push(new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50));
 	                            this.towers[i].timeNextShoot += this.towers[i].rate;
@@ -286,8 +294,8 @@ var app =
 	                        this.enemies[i].health -= this.shells[j].damage;
 	                        if (this.enemies[i].health <= 0) {
 	                            /**
-	                             * @param {number} enemyCenterX
-	                             * @param {number} enemyCenterY
+	                             * @param {number} enemyCenterX.
+	                             * @param {number} enemyCenterY.
 	                             * */
 	                            this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
 	                            this.enemies.splice(i, 1);
@@ -304,11 +312,13 @@ var app =
 	        key: '_render',
 	        value: function _render() {
 	            /**
-	             * Clear canvas before all rendering
+	             * Clear canvas before all rendering.
 	             * */
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-	            // пока хардкорно отрисовывается первый уровень
+	            /**
+	             * @todo Create method or class to draw level.
+	             * */
 	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
 
 	            for (var i = 0; i < this.towers.length; i++) {
@@ -316,7 +326,6 @@ var app =
 	            }
 
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                //console.log(this.enemies[i].centerX, this.enemies[i].centerY);
 	                this.enemies[i].draw();
 	            }
 
@@ -348,6 +357,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing resources.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -357,12 +368,22 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Data = function () {
+
+	    /**
+	     * Create data.
+	     * */
+
 	    function Data() {
 	        _classCallCheck(this, Data);
 
 	        this.cache = {};
 	        this.readyCallBacks = [];
 	    }
+
+	    /**
+	     * Call the method _load, witch load images.
+	     * @param {string|Array} urlOrArr - Take one url or array of urls.
+	     * */
 
 	    _createClass(Data, [{
 	        key: 'load',
@@ -377,6 +398,12 @@ var app =
 	                this._load(urlOrArr);
 	            }
 	        }
+
+	        /**
+	         * Load images into cache and add callbacks into array.
+	         * @param {string} url - Contain one url.
+	         * */
+
 	    }, {
 	        key: '_load',
 	        value: function _load(url) {
@@ -401,11 +428,24 @@ var app =
 	                })();
 	            }
 	        }
+
+	        /**
+	         * Get image.
+	         * @param {string} url - Contain one url.
+	         * @return {Image} Image object.
+	         * */
+
 	    }, {
 	        key: 'get',
 	        value: function get(url) {
 	            return this.cache[url];
 	        }
+
+	        /**
+	         * Check that all images are loaded.
+	         * @return {boolean} Ready status.
+	         * */
+
 	    }, {
 	        key: '_isReady',
 	        value: function _isReady() {
@@ -417,6 +457,12 @@ var app =
 	            }
 	            return ready;
 	        }
+
+	        /**
+	         * Put callbacks into array.
+	         * @param {requestCallback} func - Callback run after loading all images.
+	         * */
+
 	    }, {
 	        key: 'onReady',
 	        value: function onReady(func) {
@@ -436,6 +482,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing initialization.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -445,6 +493,11 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Init = function () {
+
+	    /**
+	     * Create initialization.
+	     * */
+
 	    function Init() {
 	        _classCallCheck(this, Init);
 
@@ -453,6 +506,11 @@ var app =
 	        this._gameLoop();
 	    }
 
+	    /**
+	     * This method is using as callback.
+	     * @callback requestCallback.
+	     * */
+
 	    _createClass(Init, [{
 	        key: '_playAgain',
 	        value: function _playAgain() {
@@ -460,6 +518,11 @@ var app =
 	                this._reset();
 	            });
 	        }
+
+	        /**
+	         * @todo Create method _reset.
+	         * */
+
 	    }, {
 	        key: '_reset',
 	        value: function _reset() {}
@@ -487,6 +550,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing tower.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -496,16 +561,25 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Tower = function () {
+
+	    /**
+	     * Create tower.
+	     * @param {number} x - In pixels.
+	     * @param {number} y - In pixels.
+	     * @param {number} radius - In pixels.
+	     * @param {number} rate - Time in seconds to next shoot.
+	     * */
+
 	    function Tower(x, y, radius, rate) {
 	        _classCallCheck(this, Tower);
 
 	        this.x = x;
 	        this.y = y;
 	        this.radius = radius;
-	        this.size = 40;
+	        this.size = 40; /** In pixels.*/
 	        this.centerX = this.x + this.size / 2;
 	        this.centerY = this.y + this.size / 2;
-	        this.rate = rate; // time to next shoot
+	        this.rate = rate;
 	        this.timeNextShoot = 0;
 	        this.timeDetectionFirstEnemy = 0;
 	    }
@@ -515,7 +589,18 @@ var app =
 	        value: function draw() {
 	            app.context.drawImage(app.data.get('img/towers.png'), this.x, this.y);
 
+	            /**
+	             * Draw radius of the tower.
+	             * */
 	            app.context.beginPath();
+	            /**
+	             * Default draw arc clockwise.
+	             * @param x - Center coordinate along the x axis (in pixels).
+	             * @param y - Center coordinate along the y axis (in pixels).
+	             * @param radius - In pixels.
+	             * @param startAngle - In radians.
+	             * @param endAngle - In radians.
+	             * */
 	            app.context.arc(this.centerX, this.centerY, this.radius, 0, Math.PI * 2);
 	            app.context.strokeStyle = 'red';
 	            app.context.stroke();
@@ -534,6 +619,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing enemy.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -543,12 +630,21 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Enemy = function () {
+
+	    /**
+	     * Create enemy.
+	     * @param {number} x - In pixels.
+	     * @param {number} y - In pixels.
+	     * @param {number} speed - In pixels per second.
+	     * @param {number} health.
+	     * */
+
 	    function Enemy(x, y, speed, health) {
 	        _classCallCheck(this, Enemy);
 
 	        this.x = x;
 	        this.y = y;
-	        this.speed = speed; // Speed in pixels per second
+	        this.speed = speed;
 	        this.size = 40;
 	        this.health = health;
 
@@ -561,12 +657,22 @@ var app =
 	            this.centerX = this.x + this.size / 2;
 	            this.centerY = this.y + this.size / 2;
 	        }
+
+	        /**
+	         * Move enemy.
+	         * @param {number} date - Increment date from method _frame.
+	         * */
+
 	    }, {
 	        key: 'move',
 	        value: function move(date) {
 	            this._centerCoord();
 
-	            // пока движется только по прямой
+	            /**
+	             * For now enemies move in a straight line.
+	             *
+	             * @todo After creation map of level, Change method 'move'.
+	             * */
 	            this.x -= this.speed * date;
 	        }
 	    }, {
@@ -588,6 +694,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing shell.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -597,6 +705,18 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Shell = function () {
+
+	    /**
+	     * Create shell.
+	     * @param {number} centerX - In pixels.
+	     * @param {number} centerY - In pixels.
+	     * @param {number} enemyCenterX - In pixels.
+	     * @param {number} enemyCenterY - In pixels.
+	     * @param {number} speed - In pixels per second
+	     * @param {number} size - In pixels.
+	     * @param {number} damage
+	     * */
+
 	    function Shell(centerX, centerY, enemyCenterX, enemyCenterY, speed, size, damage) {
 	        _classCallCheck(this, Shell);
 
@@ -606,7 +726,7 @@ var app =
 	        this.enemyCenterY = enemyCenterY;
 	        this.angle = Math.atan2(this.centerY - this.enemyCenterY, this.enemyCenterX - this.centerX);
 	        this.startCenterX = this.centerX;
-	        this.speed = speed; // Speed in pixels per second
+	        this.speed = speed;
 	        this.size = size;
 	        this.damage = damage;
 
@@ -619,6 +739,12 @@ var app =
 	            this.x = this.centerX - this.size / 2;
 	            this.y = this.centerY - this.size / 2;
 	        }
+
+	        /**
+	         * Move shell.
+	         * @param {number} date - Increment date from method _frame.
+	         * */
+
 	    }, {
 	        key: 'move',
 	        value: function move(date) {
@@ -657,6 +783,8 @@ var app =
 
 	'use strict';
 
+	/** Class representing explosion.*/
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	Object.defineProperty(exports, "__esModule", {
@@ -666,6 +794,13 @@ var app =
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Explosion = function () {
+
+	    /**
+	     * Create explosion.
+	     * @param {number} centerEnemyX - In pixels.
+	     * @param {number} centerEnemyY - In pixels.
+	     * */
+
 	    function Explosion(centerEnemyX, centerEnemyY) {
 	        _classCallCheck(this, Explosion);
 
@@ -674,8 +809,13 @@ var app =
 	        this.size = 40;
 	        this.x = this.centerEnemyX - this.size / 2;
 	        this.y = this.centerEnemyY - this.size / 2;
-	        this.maxAmountFramesDrawing = 10; // продолжительность взрыва (в кадрах). потом надо будет переделать на спрайты.
 	        this.amountFramesDrawing = 0;
+	        /**
+	         * Duration of explosion (in frames).
+	         *
+	         * @todo Change in sprite.
+	         * */
+	        this.maxAmountFramesDrawing = 10;
 	    }
 
 	    _createClass(Explosion, [{

@@ -1,7 +1,18 @@
 'use strict';
 
+/** Class representing shell.*/
 export default class Shell {
 
+    /**
+     * Create shell.
+     * @param {number} centerX - In pixels.
+     * @param {number} centerY - In pixels.
+     * @param {number} enemyCenterX - In pixels.
+     * @param {number} enemyCenterY - In pixels.
+     * @param {number} speed - In pixels per second
+     * @param {number} size - In pixels.
+     * @param {number} damage
+     * */
     constructor(centerX, centerY, enemyCenterX, enemyCenterY, speed, size, damage) {
         this.centerX = centerX;
         this.centerY = centerY;
@@ -9,7 +20,7 @@ export default class Shell {
         this.enemyCenterY = enemyCenterY;
         this.angle = Math.atan2((this.centerY - this.enemyCenterY),(this.enemyCenterX - this.centerX));
         this.startCenterX = this.centerX;
-        this.speed = speed; // Speed in pixels per second
+        this.speed = speed;
         this.size = size;
         this.damage = damage;
 
@@ -21,6 +32,10 @@ export default class Shell {
         this.y = this.centerY - this.size / 2;
     }
 
+    /**
+     * Move shell.
+     * @param {number} date - Increment date from method _frame.
+     * */
     move(date) {
         let angle, k = 1, dx;
         if ((this.enemyCenterX - this.startCenterX) > 0) {

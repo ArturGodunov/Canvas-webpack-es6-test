@@ -1,12 +1,20 @@
 'use strict';
 
+/** Class representing resources.*/
 export default class Data {
 
+    /**
+     * Create data.
+     * */
     constructor() {
         this.cache = {};
         this.readyCallBacks = [];
     }
 
+    /**
+     * Call the method _load, witch load images.
+     * @param {string|Array} urlOrArr - Take one url or array of urls.
+     * */
     load(urlOrArr) {
         if (urlOrArr instanceof Array) {
             urlOrArr.forEach(
@@ -17,6 +25,10 @@ export default class Data {
         }
     }
 
+    /**
+     * Load images into cache and add callbacks into array.
+     * @param {string} url - Contain one url.
+     * */
     _load(url) {
         if (this.cache[url]) {
             return cache[url];
@@ -36,10 +48,19 @@ export default class Data {
         }
     }
 
+    /**
+     * Get image.
+     * @param {string} url - Contain one url.
+     * @return {Image} Image object.
+     * */
     get(url) {
         return this.cache[url];
     }
 
+    /**
+     * Check that all images are loaded.
+     * @return {boolean} Ready status.
+     * */
     _isReady() {
         let ready = true;
         for (let key in this.cache) {
@@ -50,6 +71,10 @@ export default class Data {
         return ready;
     }
 
+    /**
+     * Put callbacks into array.
+     * @param {requestCallback} func - Callback run after loading all images.
+     * */
     onReady(func) {
         this.readyCallBacks.push(func);
     }

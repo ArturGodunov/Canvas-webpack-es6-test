@@ -1,7 +1,12 @@
 'use strict';
 
+/** Class representing game loop.*/
 export default class GameLoop {
 
+    /**
+     * Create game loop.
+     * @param {number} lastTime - Timestamp of starting game loop.
+     * */
     constructor(lastTime) {
         this.canvasWidth = document.getElementById('canvas').offsetWidth;
         this.canvasHeight = document.getElementById('canvas').offsetHeight;
@@ -12,11 +17,11 @@ export default class GameLoop {
         this.shells = [];
         this.enemies = [];
         this.explosions = [];
-        this.amountEnemies = 0; // кол-во врагов на карте
-        this.maxAmountEnemies = 10; // max кол-во врагов на карте
-        this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
-        this.amountEnemiesPass = 0; // кол-во пропущенных врагов
-        this.timeAddEnemy = 1; // time to first enemy
+        this.amountEnemies = 0; /** Amount enemies on map.*/
+        this.maxAmountEnemies = 10; /** Max amount enemies on map.*/
+        this.maxAmountEnemiesPass = 30; /** Max amount enemies passing map.*/
+        this.amountEnemiesPass = 0; /** Amount enemies passing map.*/
+        this.timeAddEnemy = 1; /** Time to adding first enemy.*/
         this.isGameOver = false;
 
         this._frame();
@@ -24,7 +29,7 @@ export default class GameLoop {
 
     _frame() {
         let now = Date.now();
-        this.date = (now - this.lastTime) / 1000;
+        this.incrementDate = (now - this.lastTime) / 1000;
 
         this._update();
         this._render();
@@ -34,46 +39,46 @@ export default class GameLoop {
         }
 
         this.lastTime = now;
-        requestAnimationFrame(this._frame.bind(this)); //bind от потери контекста (иначе будет в контексте window)
+        requestAnimationFrame(this._frame.bind(this)); /** Bind the context of this class, else the context will be 'window'.*/
     }
 
     _update() {
-        this.gameTime += this.date;
+        this.gameTime += this.incrementDate;
 
         this._updateEnemies();
         this._updateShells();
         this._updateExplosions();
 
-        // пока хардкордно добавляю башни.
-        // потом сдлелать метод добавления башень.
         /**
-         * Create new towers
+         * Create new towers.
+         *
+         * @todo Create method of adding towers.
          * */
         if (this.towers < 2) {
             /**
-             * @param {number} x
-             * @param {number} y
-             * @param {number} radius
-             * @param {number} rate - Time to next shoot
+             * @param {number} x - In pixels.
+             * @param {number} y - In pixels.
+             * @param {number} radius - In pixels.
+             * @param {number} rate - Time to next shoot.
              * */
             this.towers.push(new app.tower(340, 160, 100, 1));
             this.towers.push(new app.tower(200, 60, 100, 1));
         }
 
         /**
-         * Add new enemies
+         * Add new enemies.
          * */
         if (this.amountEnemies < this.maxAmountEnemies) {
             if (this.gameTime > this.timeAddEnemy) {
                 /**
-                 * @param {number} x
-                 * @param {number} y
-                 * @param {number} speed - In pixels per second
-                 * @param {number} health
+                 * @param {number} x - In pixels.
+                 * @param {number} y - In pixels.
+                 * @param {number} speed - In pixels per second.
+                 * @param {number} health.
                  * */
                 this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
                 this.amountEnemies++;
-                this.timeAddEnemy += 1; // time to next enemy
+                this.timeAddEnemy += 1;  /** Time to adding next enemy.*/
             }
         }
 
@@ -82,7 +87,7 @@ export default class GameLoop {
 
     _updateEnemies() {
         for (let i=0; i<this.enemies.length; i++) {
-            this.enemies[i].move(this.date);
+            this.enemies[i].move(this.incrementDate);
 
             if ((this.enemies[i].x + this.enemies[i].size) < 0) {
                 this.enemies.splice(i, 1);
@@ -94,7 +99,7 @@ export default class GameLoop {
 
     _updateShells() {
         for (let i=0; i<this.shells.length; i++) {
-            this.shells[i].move(this.date);
+            this.shells[i].move(this.incrementDate);
 
             if (this.shells[i].centerX < 0 || this.shells[i].centerX > this.canvasWidth ||
                 this.shells[i].centerY < 0 || this.shells[i].centerY > this.canvasHeight) {
@@ -141,13 +146,13 @@ export default class GameLoop {
                     }
                     if (this.gameTime > this.towers[i].timeDetectionFirstEnemy + this.towers[i].timeNextShoot) {
                         /**
-                         * @param {number} towerCenterX
-                         * @param {number} towerCenterY
-                         * @param {number} enemyCenterX
-                         * @param {number} enemyCenterY
-                         * @param {number} speed - In pixels per second
-                         * @param {number} size
-                         * @param {number} damage
+                         * @param {number} towerCenterX - In pixels.
+                         * @param {number} towerCenterY - In pixels.
+                         * @param {number} enemyCenterX - In pixels.
+                         * @param {number} enemyCenterY - In pixels.
+                         * @param {number} speed - In pixels per second.
+                         * @param {number} size - In pixels.
+                         * @param {number} damage.
                          * */
                         this.shells.push(
                             new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50)
@@ -172,8 +177,8 @@ export default class GameLoop {
                     this.enemies[i].health -= this.shells[j].damage;
                     if (this.enemies[i].health <= 0) {
                         /**
-                         * @param {number} enemyCenterX
-                         * @param {number} enemyCenterY
+                         * @param {number} enemyCenterX.
+                         * @param {number} enemyCenterY.
                          * */
                         this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
                         this.enemies.splice(i, 1);
@@ -189,11 +194,13 @@ export default class GameLoop {
 
     _render() {
         /**
-         * Clear canvas before all rendering
+         * Clear canvas before all rendering.
          * */
         app.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
 
-        // пока хардкорно отрисовывается первый уровень
+        /**
+         * @todo Create method or class to draw level.
+         * */
         app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
 
         for (let i=0; i<this.towers.length; i++) {
@@ -201,7 +208,6 @@ export default class GameLoop {
         }
 
         for (let i=0; i<this.enemies.length; i++) {
-            //console.log(this.enemies[i].centerX, this.enemies[i].centerY);
             this.enemies[i].draw();
         }
 
