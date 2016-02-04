@@ -12,9 +12,11 @@ export default class GameLoop {
         this.shells = [];
         this.enemies = [];
         this.explosions = [];
-        this.amountEnemies = 1; //общее кол-во врагов на карте
+        this.amountEnemies = 0;
+        this.maxAmountEnemies = 10; //общее кол-во врагов на карте
         this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
         this.amountEnemiesPass = 0; // начальное кол-во пропущенных врагов
+        this.timeAddEnemy = 1;
         this.isGameOver = false;
 
         this._frame();
@@ -23,12 +25,6 @@ export default class GameLoop {
     _frame() {
         let now = Date.now();
         this.date = (now - this.lastTime) / 1000;
-
-        // пока хардкордно добавляю 1 башню.
-        // потом сдлелать метод добавления башень.
-        if (this.towers < 1) {
-            this.towers.push(new app.tower(340, 160, 100, 25));
-        }
 
         this._update();
         this._render();
@@ -43,17 +39,27 @@ export default class GameLoop {
 
     _update() {
         this.gameTime += this.date;
-
+        console.log(this.gameTime);
         this._updateEnemies();
         this._updateShells();
         this._updateExplosions();
         this._updateTowers();
 
-        //if (Math.random() < 1 - Math.pow(.993, this.gameTime)) {
-        //    this.enemies.push(new app.enemy(document.getElementById('canvas').width, 100));
-        //}
-        if (this.enemies.length < this.amountEnemies) {
-            this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
+        // пока хардкордно добавляю 1 башню.
+        // потом сдлелать метод добавления башень.
+        if (this.towers < 1) {
+            this.towers.push(new app.tower(340, 160, 100, 50));
+        }
+
+        //
+        // add enemies
+        //
+        if (this.amountEnemies < this.maxAmountEnemies) {
+            if (this.gameTime > this.timeAddEnemy) {
+                this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
+                this.amountEnemies++;
+                this.timeAddEnemy += 1; // enemy rate
+            }
         }
 
         this._checkCollisions();
@@ -121,6 +127,9 @@ export default class GameLoop {
                     a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
                     b = Math.pow(this.towers[i].radius, 2);
                 if (a <= b) {
+                    //
+                    // переделать на кол-во выстрелов в секунду, а не через кол-во кадров
+                    //
                     if (this.towers[i].framesBeforeShoot >= this.towers[i].rate) {
                         this.shells.push(
                             new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50)
