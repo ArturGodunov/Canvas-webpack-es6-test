@@ -9,8 +9,9 @@ export default class Tower {
         this.size = 40;
         this.centerX = this.x + this.size / 2;
         this.centerY = this.y + this.size / 2;
-        this.rate = rate; // кол-во выстрелов в секунду
-        this.framesBeforeShoot = this.rate;
+        this.rate = rate; // time to next shoot
+        this.timeNextShoot = 0;
+        this.timeDetectionFirstEnemy = 0;
     }
 
     draw() {

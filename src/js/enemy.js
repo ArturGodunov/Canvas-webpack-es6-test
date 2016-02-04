@@ -20,7 +20,8 @@ export default class Enemy {
     move(date) {
         this._centerCoord();
 
-        this.x -= this.speed * date; // пока движется только по прямой
+        // пока движется только по прямой
+        this.x -= this.speed * date;
     }
 
     draw() {

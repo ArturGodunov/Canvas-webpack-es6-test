@@ -119,11 +119,11 @@ var app =
 	        this.shells = [];
 	        this.enemies = [];
 	        this.explosions = [];
-	        this.amountEnemies = 0;
-	        this.maxAmountEnemies = 10; //общее кол-во врагов на карте
+	        this.amountEnemies = 0; // кол-во врагов на карте
+	        this.maxAmountEnemies = 10; // max кол-во врагов на карте
 	        this.maxAmountEnemiesPass = 30; // допустимое max кол-во пропущенных врагов
-	        this.amountEnemiesPass = 0; // начальное кол-во пропущенных врагов
-	        this.timeAddEnemy = 1;
+	        this.amountEnemiesPass = 0; // кол-во пропущенных врагов
+	        this.timeAddEnemy = 1; // time to first enemy
 	        this.isGameOver = false;
 
 	        this._frame();
@@ -149,26 +149,41 @@ var app =
 	        key: '_update',
 	        value: function _update() {
 	            this.gameTime += this.date;
-	            console.log(this.gameTime);
+
 	            this._updateEnemies();
 	            this._updateShells();
 	            this._updateExplosions();
-	            this._updateTowers();
 
-	            // пока хардкордно добавляю 1 башню.
+	            // пока хардкордно добавляю башни.
 	            // потом сдлелать метод добавления башень.
-	            if (this.towers < 1) {
-	                this.towers.push(new app.tower(340, 160, 100, 50));
+	            /**
+	             * Create new towers
+	             * */
+	            if (this.towers < 2) {
+	                /**
+	                 * @param {number} x
+	                 * @param {number} y
+	                 * @param {number} radius
+	                 * @param {number} rate - Time to next shoot
+	                 * */
+	                this.towers.push(new app.tower(340, 160, 100, 1));
+	                this.towers.push(new app.tower(200, 60, 100, 1));
 	            }
 
-	            //
-	            // add enemies
-	            //
+	            /**
+	             * Add new enemies
+	             * */
 	            if (this.amountEnemies < this.maxAmountEnemies) {
 	                if (this.gameTime > this.timeAddEnemy) {
+	                    /**
+	                     * @param {number} x
+	                     * @param {number} y
+	                     * @param {number} speed - In pixels per second
+	                     * @param {number} health
+	                     * */
 	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
 	                    this.amountEnemies++;
-	                    this.timeAddEnemy += 1; // enemy rate
+	                    this.timeAddEnemy += 1; // time to next enemy
 	                }
 	            }
 
@@ -211,17 +226,10 @@ var app =
 	            }
 	        }
 	    }, {
-	        key: '_updateTowers',
-	        value: function _updateTowers() {
-	            for (var i = 0; i < this.towers.length; i++) {
-	                this.towers[i].framesBeforeShoot++;
-	            }
-	        }
-	    }, {
 	        key: '_checkCollisions',
 	        value: function _checkCollisions() {
 	            this._checkEnemiesMaxPass();
-	            this._checkIntersectionCircles();
+	            this._checkCrossingCircles();
 	            this._checkCollisionsEnemiesShells();
 	        }
 	    }, {
@@ -232,8 +240,8 @@ var app =
 	            }
 	        }
 	    }, {
-	        key: '_checkIntersectionCircles',
-	        value: function _checkIntersectionCircles() {
+	        key: '_checkCrossingCircles',
+	        value: function _checkCrossingCircles() {
 	            for (var i = 0; i < this.towers.length; i++) {
 	                for (var j = 0; j < this.enemies.length; j++) {
 	                    var enemyCenterX = this.enemies[j].centerX,
@@ -243,12 +251,21 @@ var app =
 	                        a = Math.pow(enemyCenterX - towerCenterX, 2) + Math.pow(enemyCenterY - towerCenterY, 2),
 	                        b = Math.pow(this.towers[i].radius, 2);
 	                    if (a <= b) {
-	                        //
-	                        // переделать на кол-во выстрелов в секунду, а не через кол-во кадров
-	                        //
-	                        if (this.towers[i].framesBeforeShoot >= this.towers[i].rate) {
+	                        if (this.towers[i].timeDetectionFirstEnemy === 0) {
+	                            this.towers[i].timeDetectionFirstEnemy = this.gameTime;
+	                        }
+	                        if (this.gameTime > this.towers[i].timeDetectionFirstEnemy + this.towers[i].timeNextShoot) {
+	                            /**
+	                             * @param {number} towerCenterX
+	                             * @param {number} towerCenterY
+	                             * @param {number} enemyCenterX
+	                             * @param {number} enemyCenterY
+	                             * @param {number} speed - In pixels per second
+	                             * @param {number} size
+	                             * @param {number} damage
+	                             * */
 	                            this.shells.push(new app.shell(towerCenterX, towerCenterY, enemyCenterX, enemyCenterY, 200, 10, 50));
-	                            this.towers[i].framesBeforeShoot = 0;
+	                            this.towers[i].timeNextShoot += this.towers[i].rate;
 	                        }
 	                    }
 	                }
@@ -268,6 +285,10 @@ var app =
 	                    if (a <= b) {
 	                        this.enemies[i].health -= this.shells[j].damage;
 	                        if (this.enemies[i].health <= 0) {
+	                            /**
+	                             * @param {number} enemyCenterX
+	                             * @param {number} enemyCenterY
+	                             * */
 	                            this.explosions.push(new app.explosion(enemyCenterX, enemyCenterY));
 	                            this.enemies.splice(i, 1);
 	                            i--;
@@ -282,9 +303,13 @@ var app =
 	    }, {
 	        key: '_render',
 	        value: function _render() {
+	            /**
+	             * Clear canvas before all rendering
+	             * */
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0); // пока хардкорно отрисовывается первый уровень
+	            // пока хардкорно отрисовывается первый уровень
+	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
 
 	            for (var i = 0; i < this.towers.length; i++) {
 	                this.towers[i].draw();
@@ -480,8 +505,9 @@ var app =
 	        this.size = 40;
 	        this.centerX = this.x + this.size / 2;
 	        this.centerY = this.y + this.size / 2;
-	        this.rate = rate; // кол-во выстрелов в секунду
-	        this.framesBeforeShoot = this.rate;
+	        this.rate = rate; // time to next shoot
+	        this.timeNextShoot = 0;
+	        this.timeDetectionFirstEnemy = 0;
 	    }
 
 	    _createClass(Tower, [{
@@ -540,7 +566,8 @@ var app =
 	        value: function move(date) {
 	            this._centerCoord();
 
-	            this.x -= this.speed * date; // пока движется только по прямой
+	            // пока движется только по прямой
+	            this.x -= this.speed * date;
 	        }
 	    }, {
 	        key: 'draw',
@@ -647,7 +674,7 @@ var app =
 	        this.size = 40;
 	        this.x = this.centerEnemyX - this.size / 2;
 	        this.y = this.centerEnemyY - this.size / 2;
-	        this.maxAmountFramesDrawing = 10; // кол-во кадров в течении которых взрыв будет отрисовываться. потом надо будет переделать на спрайты.
+	        this.maxAmountFramesDrawing = 10; // продолжительность взрыва (в кадрах). потом надо будет переделать на спрайты.
 	        this.amountFramesDrawing = 0;
 	    }
 
