@@ -6,11 +6,13 @@ export default class GameLoop {
     /**
      * Create game loop.
      * @param {number} lastTime - Timestamp of starting game loop.
+     * @param {number} levelNumber.
      * */
-    constructor(lastTime) {
+    constructor(lastTime, levelNumber) {
         this.canvasWidth = document.getElementById('canvas').offsetWidth;
         this.canvasHeight = document.getElementById('canvas').offsetHeight;
         this.gameOverMaskClass = document.getElementById('game-over_mask').className;
+        this.levelNumber = levelNumber;
         this.gameTime = 0;
         this.lastTime = lastTime;
         this.towers = [];
@@ -45,6 +47,7 @@ export default class GameLoop {
     _update() {
         this.gameTime += this.incrementDate;
 
+        this._updateLevel();
         this._updateEnemies();
         this._updateShells();
         this._updateExplosions();
@@ -83,6 +86,10 @@ export default class GameLoop {
         }
 
         this._checkCollisions();
+    }
+
+    _updateLevel() {
+        this.map = new app.map(this.levelNumber);
     }
 
     _updateEnemies() {
@@ -126,7 +133,7 @@ export default class GameLoop {
     }
 
     _checkEnemiesMaxPass() {
-        if (this.amountEnemiesPass === this.maxAmountEnemiesPass) {
+        if (this.amountEnemiesPass >= this.maxAmountEnemiesPass) {
             this._gameOver();
         }
     }
@@ -198,10 +205,7 @@ export default class GameLoop {
          * */
         app.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
 
-        /**
-         * @todo Create method or class to draw level.
-         * */
-        app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
+        this.map.draw();
 
         for (let i=0; i<this.towers.length; i++) {
             this.towers[i].draw();

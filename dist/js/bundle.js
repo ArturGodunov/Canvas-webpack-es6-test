@@ -75,6 +75,10 @@ var app =
 
 	var _explosion2 = _interopRequireDefault(_explosion);
 
+	var _map = __webpack_require__(8);
+
+	var _map2 = _interopRequireDefault(_map);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var context = document.getElementById('canvas').getContext('2d'),
@@ -91,6 +95,11 @@ var app =
 	exports.enemy = _enemy2.default;
 	exports.shell = _shell2.default;
 	exports.explosion = _explosion2.default;
+	exports.map = _map2.default;
+
+	/**
+	 * @todo Level map!!!
+	 * */
 
 /***/ },
 /* 1 */
@@ -113,14 +122,16 @@ var app =
 	    /**
 	     * Create game loop.
 	     * @param {number} lastTime - Timestamp of starting game loop.
+	     * @param {number} levelNumber.
 	     * */
 
-	    function GameLoop(lastTime) {
+	    function GameLoop(lastTime, levelNumber) {
 	        _classCallCheck(this, GameLoop);
 
 	        this.canvasWidth = document.getElementById('canvas').offsetWidth;
 	        this.canvasHeight = document.getElementById('canvas').offsetHeight;
 	        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
+	        this.levelNumber = levelNumber;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
 	        this.towers = [];
@@ -158,6 +169,7 @@ var app =
 	        value: function _update() {
 	            this.gameTime += this.incrementDate;
 
+	            this._updateLevel();
 	            this._updateEnemies();
 	            this._updateShells();
 	            this._updateExplosions();
@@ -196,6 +208,11 @@ var app =
 	            }
 
 	            this._checkCollisions();
+	        }
+	    }, {
+	        key: '_updateLevel',
+	        value: function _updateLevel() {
+	            this.map = new app.map(this.levelNumber);
 	        }
 	    }, {
 	        key: '_updateEnemies',
@@ -243,7 +260,7 @@ var app =
 	    }, {
 	        key: '_checkEnemiesMaxPass',
 	        value: function _checkEnemiesMaxPass() {
-	            if (this.amountEnemiesPass === this.maxAmountEnemiesPass) {
+	            if (this.amountEnemiesPass >= this.maxAmountEnemiesPass) {
 	                this._gameOver();
 	            }
 	        }
@@ -316,10 +333,7 @@ var app =
 	             * */
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-	            /**
-	             * @todo Create method or class to draw level.
-	             * */
-	            app.context.drawImage(app.data.get('img/bglevel-1.png'), 0, 0);
+	            this.map.draw();
 
 	            for (var i = 0; i < this.towers.length; i++) {
 	                this.towers[i].draw();
@@ -526,10 +540,15 @@ var app =
 	    }, {
 	        key: '_reset',
 	        value: function _reset() {}
+
+	        /**
+	         * @todo After created save method or class, set the level number dynamically.
+	         * */
+
 	    }, {
 	        key: '_gameLoop',
 	        value: function _gameLoop() {
-	            new app.gameLoop(Date.now());
+	            new app.gameLoop(Date.now(), 1);
 	        }
 	    }], [{
 	        key: 'startInit',
@@ -829,6 +848,49 @@ var app =
 	}();
 
 	exports.default = Explosion;
+	;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	/** Class representing map.*/
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Map = function () {
+
+	    /**
+	     * Create level.
+	     * @param {number} levelNumber.
+	     * */
+
+	    function Map(levelNumber) {
+	        _classCallCheck(this, Map);
+
+	        this.levelNumber = levelNumber;
+	        this.level_1 = ['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200];
+	    }
+
+	    _createClass(Map, [{
+	        key: 'draw',
+	        value: function draw() {
+	            app.context.drawImage(app.data.get('img/bglevel-' + this.levelNumber + '.png'), 0, 0);
+	        }
+	    }]);
+
+	    return Map;
+	}();
+
+	exports.default = Map;
 	;
 
 /***/ }
