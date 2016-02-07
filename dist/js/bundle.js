@@ -218,7 +218,7 @@ var app =
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].move(this.incrementDate);
+	                this.enemies[i].move(this.incrementDate, 'left');
 
 	                if (this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
@@ -680,19 +680,28 @@ var app =
 	        /**
 	         * Move enemy.
 	         * @param {number} date - Increment date from method _frame.
+	         * @param {string} direction.
 	         * */
 
 	    }, {
 	        key: 'move',
-	        value: function move(date) {
+	        value: function move(date, direction) {
 	            this._centerCoord();
 
-	            /**
-	             * For now enemies move in a straight line.
-	             *
-	             * @todo After creation map of level, Change method 'move'.
-	             * */
-	            this.x -= this.speed * date;
+	            switch (direction) {
+	                case 'left':
+	                    this.x -= this.speed * date;
+	                    break;
+	                case 'right':
+	                    this.x += this.speed * date;
+	                    break;
+	                case 'up':
+	                    this.y -= this.speed * date;
+	                    break;
+	                case 'down':
+	                    this.y += this.speed * date;
+	                    break;
+	            }
 	        }
 	    }, {
 	        key: 'draw',
@@ -877,7 +886,7 @@ var app =
 	        _classCallCheck(this, Map);
 
 	        this.levelNumber = levelNumber;
-	        this.level_1 = ['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200];
+	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200]];
 	    }
 
 	    _createClass(Map, [{

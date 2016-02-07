@@ -28,16 +28,25 @@ export default class Enemy {
     /**
      * Move enemy.
      * @param {number} date - Increment date from method _frame.
+     * @param {string} direction.
      * */
-    move(date) {
+    move(date, direction) {
         this._centerCoord();
 
-        /**
-         * For now enemies move in a straight line.
-         *
-         * @todo After creation map of level, Change method 'move'.
-         * */
-        this.x -= this.speed * date;
+        switch (direction) {
+            case 'left':
+                this.x -= this.speed * date;
+                break;
+            case 'right':
+                this.x += this.speed * date;
+                break;
+            case 'up':
+                this.y -= this.speed * date;
+                break;
+            case 'down':
+                this.y += this.speed * date;
+                break;
+        }
     }
 
     draw() {

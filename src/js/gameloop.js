@@ -94,7 +94,7 @@ export default class GameLoop {
 
     _updateEnemies() {
         for (let i=0; i<this.enemies.length; i++) {
-            this.enemies[i].move(this.incrementDate);
+            this.enemies[i].move(this.incrementDate, 'left');
 
             if ((this.enemies[i].x + this.enemies[i].size) < 0) {
                 this.enemies.splice(i, 1);

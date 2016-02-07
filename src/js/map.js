@@ -9,12 +9,14 @@ export default class Map {
      * */
     constructor(levelNumber) {
         this.levelNumber = levelNumber;
-        this.level_1 = [
-            'left', 200,
-            'down', 200,
-            'left', 200,
-            'up',   100,
-            'left', 200
+        this.levels = [
+            [
+                'left', 200,
+                'down', 200,
+                'left', 200,
+                'up',   100,
+                'left', 200
+            ]
         ];
     }
 
