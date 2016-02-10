@@ -37,6 +37,6 @@ export default class Init {
      * @todo After created save method or class, set the level number dynamically.
      * */
     _gameLoop() {
-        new app.gameLoop(Date.now(), 1);
+        new app.gameLoop(Date.now(), 0);
     }
 };

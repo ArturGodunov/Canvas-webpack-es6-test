@@ -9,19 +9,11 @@ export default class Map {
      * */
     constructor(levelNumber) {
         this.levelNumber = levelNumber;
-        this.levels = [
-            [
-                'left', 200,
-                'down', 200,
-                'left', 200,
-                'up',   100,
-                'left', 200
-            ]
-        ];
+        this.level = app.data.levels[this.levelNumber];
     }
 
     draw() {
-        app.context.drawImage(app.data.get(`img/bglevel-${this.levelNumber}.png`), 0, 0);
+        app.context.drawImage(app.data.get(`img/bglevel-${this.levelNumber+1}.png`), 0, 0);
     }
 
 };

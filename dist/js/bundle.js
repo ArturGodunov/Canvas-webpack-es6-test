@@ -134,6 +134,7 @@ var app =
 	        this.levelNumber = levelNumber;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
+	        this.levels = [];
 	        this.towers = [];
 	        this.shells = [];
 	        this.enemies = [];
@@ -145,10 +146,16 @@ var app =
 	        this.timeAddEnemy = 1; /** Time to adding first enemy.*/
 	        this.isGameOver = false;
 
+	        this._startLevel();
 	        this._frame();
 	    }
 
 	    _createClass(GameLoop, [{
+	        key: '_startLevel',
+	        value: function _startLevel() {
+	            this.levels.push(new app.map(this.levelNumber));
+	        }
+	    }, {
 	        key: '_frame',
 	        value: function _frame() {
 	            var now = Date.now();
@@ -169,7 +176,6 @@ var app =
 	        value: function _update() {
 	            this.gameTime += this.incrementDate;
 
-	            this._updateLevel();
 	            this._updateEnemies();
 	            this._updateShells();
 	            this._updateExplosions();
@@ -200,8 +206,9 @@ var app =
 	                     * @param {number} y - In pixels.
 	                     * @param {number} speed - In pixels per second.
 	                     * @param {number} health.
+	                     * @param {Array} steps.
 	                     * */
-	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100));
+	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, this.levels[this.levelNumber].level));
 	                    this.amountEnemies++;
 	                    this.timeAddEnemy += 1; /** Time to adding next enemy.*/
 	                }
@@ -210,16 +217,20 @@ var app =
 	            this._checkCollisions();
 	        }
 	    }, {
-	        key: '_updateLevel',
-	        value: function _updateLevel() {
-	            this.map = new app.map(this.levelNumber);
-	        }
-	    }, {
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].move(this.incrementDate, 'left');
+	                this.enemies[i].move(this.incrementDate, this.levels[this.levelNumber].level[this.enemies[i].passedPoints * 2]);
+	                /**
+	                 * @todo Pass points
+	                 * */
+	                if (this.enemies[i].steps[this.enemies[i].passedPoints * 2 + 1] <= 0) {
+	                    this.enemies[i].passedPoints++;
+	                }
 
+	                /**
+	                 * @todo Create delete anemy when he pass the map
+	                 * */
 	                if (this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
 	                    i--;
@@ -333,7 +344,7 @@ var app =
 	             * */
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-	            this.map.draw();
+	            this.levels[this.levelNumber].draw();
 
 	            for (var i = 0; i < this.towers.length; i++) {
 	                this.towers[i].draw();
@@ -392,6 +403,7 @@ var app =
 
 	        this.cache = {};
 	        this.readyCallBacks = [];
+	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200]];
 	    }
 
 	    /**
@@ -548,7 +560,7 @@ var app =
 	    }, {
 	        key: '_gameLoop',
 	        value: function _gameLoop() {
-	            new app.gameLoop(Date.now(), 1);
+	            new app.gameLoop(Date.now(), 0);
 	        }
 	    }], [{
 	        key: 'startInit',
@@ -656,9 +668,10 @@ var app =
 	     * @param {number} y - In pixels.
 	     * @param {number} speed - In pixels per second.
 	     * @param {number} health.
+	     * @param {Array} steps.
 	     * */
 
-	    function Enemy(x, y, speed, health) {
+	    function Enemy(x, y, speed, health, steps) {
 	        _classCallCheck(this, Enemy);
 
 	        this.x = x;
@@ -666,6 +679,8 @@ var app =
 	        this.speed = speed;
 	        this.size = 40;
 	        this.health = health;
+	        this.passedPoints = 0;
+	        this.steps = steps;
 
 	        this._centerCoord();
 	    }
@@ -687,7 +702,7 @@ var app =
 	        key: 'move',
 	        value: function move(date, direction) {
 	            this._centerCoord();
-
+	            console.log(this.steps);
 	            switch (direction) {
 	                case 'left':
 	                    this.x -= this.speed * date;
@@ -702,6 +717,8 @@ var app =
 	                    this.y += this.speed * date;
 	                    break;
 	            }
+
+	            this.steps[this.passedPoints * 2 + 1] -= this.speed * date;
 	        }
 	    }, {
 	        key: 'draw',
@@ -886,13 +903,13 @@ var app =
 	        _classCallCheck(this, Map);
 
 	        this.levelNumber = levelNumber;
-	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200]];
+	        this.level = app.data.levels[this.levelNumber];
 	    }
 
 	    _createClass(Map, [{
 	        key: 'draw',
 	        value: function draw() {
-	            app.context.drawImage(app.data.get('img/bglevel-' + this.levelNumber + '.png'), 0, 0);
+	            app.context.drawImage(app.data.get('img/bglevel-' + (this.levelNumber + 1) + '.png'), 0, 0);
 	        }
 	    }]);
 

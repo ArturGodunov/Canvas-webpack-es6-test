@@ -9,13 +9,16 @@ export default class Enemy {
      * @param {number} y - In pixels.
      * @param {number} speed - In pixels per second.
      * @param {number} health.
+     * @param {Array} steps.
      * */
-    constructor(x, y, speed, health) {
+    constructor(x, y, speed, health, steps) {
         this.x = x;
         this.y = y;
         this.speed = speed;
         this.size = 40;
         this.health = health;
+        this.passedPoints = 0;
+        this.steps = steps;
 
         this._centerCoord();
     }
@@ -47,6 +50,8 @@ export default class Enemy {
                 this.y += this.speed * date;
                 break;
         }
+/*не работает*/
+        this.steps[this.passedPoints * 2 + 1] -= this.speed * date;
     }
 
     draw() {
