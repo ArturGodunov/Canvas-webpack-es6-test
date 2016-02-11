@@ -9,13 +9,16 @@ export default class Data {
     constructor() {
         this.cache = {};
         this.readyCallBacks = [];
+        /**
+         * @todo When create start point, think about first/last step.
+         * */
         this.levels = [
             [
                 'left', 200,
                 'down', 200,
                 'left', 200,
                 'up',   100,
-                'left', 200
+                'left', 220
             ]
         ];
     }

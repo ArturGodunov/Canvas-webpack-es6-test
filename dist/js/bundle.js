@@ -98,7 +98,7 @@ var app =
 	exports.map = _map2.default;
 
 	/**
-	 * @todo Level map!!!
+	 * @todo Level map!!! Create start point.
 	 * */
 
 /***/ },
@@ -130,30 +130,39 @@ var app =
 
 	        this.canvasWidth = document.getElementById('canvas').offsetWidth;
 	        this.canvasHeight = document.getElementById('canvas').offsetHeight;
-	        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
 	        this.levelNumber = levelNumber;
 	        this.gameTime = 0;
 	        this.lastTime = lastTime;
-	        this.levels = [];
+	        this.enemyDirecrions = [];
+	        this.enemySteps = [];
 	        this.towers = [];
 	        this.shells = [];
 	        this.enemies = [];
 	        this.explosions = [];
 	        this.amountEnemies = 0; /** Amount enemies on map.*/
 	        this.maxAmountEnemies = 10; /** Max amount enemies on map.*/
-	        this.maxAmountEnemiesPass = 30; /** Max amount enemies passing map.*/
+	        this.maxAmountEnemiesPass = 2; /** Max amount enemies passing map.*/
 	        this.amountEnemiesPass = 0; /** Amount enemies passing map.*/
 	        this.timeAddEnemy = 1; /** Time to adding first enemy.*/
 	        this.isGameOver = false;
 
-	        this._startLevel();
-	        this._frame();
+	        this.startLevel();
 	    }
 
 	    _createClass(GameLoop, [{
-	        key: '_startLevel',
-	        value: function _startLevel() {
-	            this.levels.push(new app.map(this.levelNumber));
+	        key: 'startLevel',
+	        value: function startLevel() {
+	            this.map = new app.map(this.levelNumber);
+
+	            for (var i = 0; i < this.map.level.length; i++) {
+	                if (i % 2 === 0) {
+	                    this.enemyDirecrions.push(this.map.level[i]);
+	                } else {
+	                    this.enemySteps.push(this.map.level[i]);
+	                }
+	            }
+
+	            this._frame();
 	        }
 	    }, {
 	        key: '_frame',
@@ -193,7 +202,7 @@ var app =
 	                 * @param {number} rate - Time to next shoot.
 	                 * */
 	                this.towers.push(new app.tower(340, 160, 100, 1));
-	                this.towers.push(new app.tower(200, 60, 100, 1));
+	                this.towers.push(new app.tower(100, 100, 100, 1));
 	            }
 
 	            /**
@@ -202,13 +211,15 @@ var app =
 	            if (this.amountEnemies < this.maxAmountEnemies) {
 	                if (this.gameTime > this.timeAddEnemy) {
 	                    /**
-	                     * @param {number} x - In pixels.
-	                     * @param {number} y - In pixels.
+	                     * @param {number} centerX - In pixels.
+	                     * @param {number} centerY - In pixels.
 	                     * @param {number} speed - In pixels per second.
 	                     * @param {number} health.
-	                     * @param {Array} steps.
+	                     * @param {Array} steps - Transfer the array by value.
+	                     *
+	                     * @todo Create universal start point.
 	                     * */
-	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, this.levels[this.levelNumber].level));
+	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
 	                    this.amountEnemies++;
 	                    this.timeAddEnemy += 1; /** Time to adding next enemy.*/
 	                }
@@ -220,18 +231,18 @@ var app =
 	        key: '_updateEnemies',
 	        value: function _updateEnemies() {
 	            for (var i = 0; i < this.enemies.length; i++) {
-	                this.enemies[i].move(this.incrementDate, this.levels[this.levelNumber].level[this.enemies[i].passedPoints * 2]);
+	                this.enemies[i].move(this.incrementDate, this.enemyDirecrions[this.enemies[i].passedPoints]);
 	                /**
-	                 * @todo Pass points
+	                 * Passing points.
 	                 * */
-	                if (this.enemies[i].steps[this.enemies[i].passedPoints * 2 + 1] <= 0) {
+	                if (this.enemies[i].steps[this.enemies[i].passedPoints] <= 0) {
 	                    this.enemies[i].passedPoints++;
 	                }
 
 	                /**
-	                 * @todo Create delete anemy when he pass the map
+	                 * @todo Create delete enemy when he pass the map.
 	                 * */
-	                if (this.enemies[i].x + this.enemies[i].size < 0) {
+	                if (this.enemyDirecrions[this.enemyDirecrions.length - 1] === 'left' && this.enemies[i].x + this.enemies[i].size < 0) {
 	                    this.enemies.splice(i, 1);
 	                    i--;
 	                    this.amountEnemiesPass++;
@@ -344,7 +355,7 @@ var app =
 	             * */
 	            app.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-	            this.levels[this.levelNumber].draw();
+	            this.map.draw();
 
 	            for (var i = 0; i < this.towers.length; i++) {
 	                this.towers[i].draw();
@@ -365,7 +376,7 @@ var app =
 	    }, {
 	        key: '_gameOver',
 	        value: function _gameOver() {
-	            this.gameOverMaskClass = this.gameOverMaskClass + ' show';
+	            document.getElementById('game-over_mask').classList.add('show');
 	            this.isGameOver = true;
 	        }
 	    }]);
@@ -403,7 +414,10 @@ var app =
 
 	        this.cache = {};
 	        this.readyCallBacks = [];
-	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 200]];
+	        /**
+	         * @todo When create start point, think about first/last step.
+	         * */
+	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 220]];
 	    }
 
 	    /**
@@ -528,7 +542,6 @@ var app =
 	        _classCallCheck(this, Init);
 
 	        this._playAgain();
-	        this._reset();
 	        this._gameLoop();
 	    }
 
@@ -540,8 +553,10 @@ var app =
 	    _createClass(Init, [{
 	        key: '_playAgain',
 	        value: function _playAgain() {
+	            var _this = this;
+
 	            document.getElementById('play-again').addEventListener('click', function () {
-	                this._reset();
+	                _this._reset();
 	            });
 	        }
 
@@ -551,7 +566,11 @@ var app =
 
 	    }, {
 	        key: '_reset',
-	        value: function _reset() {}
+	        value: function _reset() {
+	            document.getElementById('game-over_mask').classList.remove('show');
+
+	            this._gameLoop();
+	        }
 
 	        /**
 	         * @todo After created save method or class, set the level number dynamically.
@@ -664,20 +683,20 @@ var app =
 
 	    /**
 	     * Create enemy.
-	     * @param {number} x - In pixels.
-	     * @param {number} y - In pixels.
+	     * @param {number} centerX - In pixels.
+	     * @param {number} centerY - In pixels.
 	     * @param {number} speed - In pixels per second.
 	     * @param {number} health.
 	     * @param {Array} steps.
 	     * */
 
-	    function Enemy(x, y, speed, health, steps) {
+	    function Enemy(centerX, centerY, speed, health, steps) {
 	        _classCallCheck(this, Enemy);
 
-	        this.x = x;
-	        this.y = y;
+	        this.centerX = centerX;
+	        this.centerY = centerY;
 	        this.speed = speed;
-	        this.size = 40;
+	        this.size = 20;
 	        this.health = health;
 	        this.passedPoints = 0;
 	        this.steps = steps;
@@ -688,8 +707,8 @@ var app =
 	    _createClass(Enemy, [{
 	        key: '_centerCoord',
 	        value: function _centerCoord() {
-	            this.centerX = this.x + this.size / 2;
-	            this.centerY = this.y + this.size / 2;
+	            this.x = this.centerX - this.size / 2;
+	            this.y = this.centerY - this.size / 2;
 	        }
 
 	        /**
@@ -702,23 +721,23 @@ var app =
 	        key: 'move',
 	        value: function move(date, direction) {
 	            this._centerCoord();
-	            console.log(this.steps);
+
 	            switch (direction) {
 	                case 'left':
-	                    this.x -= this.speed * date;
+	                    this.centerX -= this.speed * date;
 	                    break;
 	                case 'right':
-	                    this.x += this.speed * date;
+	                    this.centerX += this.speed * date;
 	                    break;
 	                case 'up':
-	                    this.y -= this.speed * date;
+	                    this.centerY -= this.speed * date;
 	                    break;
 	                case 'down':
-	                    this.y += this.speed * date;
+	                    this.centerY += this.speed * date;
 	                    break;
 	            }
 
-	            this.steps[this.passedPoints * 2 + 1] -= this.speed * date;
+	            this.steps[this.passedPoints] -= this.speed * date;
 	        }
 	    }, {
 	        key: 'draw',

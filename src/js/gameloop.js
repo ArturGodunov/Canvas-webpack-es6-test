@@ -11,28 +11,37 @@ export default class GameLoop {
     constructor(lastTime, levelNumber) {
         this.canvasWidth = document.getElementById('canvas').offsetWidth;
         this.canvasHeight = document.getElementById('canvas').offsetHeight;
-        this.gameOverMaskClass = document.getElementById('game-over_mask').className;
         this.levelNumber = levelNumber;
         this.gameTime = 0;
         this.lastTime = lastTime;
-        this.levels = [];
+        this.enemyDirecrions = [];
+        this.enemySteps = [];
         this.towers = [];
         this.shells = [];
         this.enemies = [];
         this.explosions = [];
         this.amountEnemies = 0; /** Amount enemies on map.*/
         this.maxAmountEnemies = 10; /** Max amount enemies on map.*/
-        this.maxAmountEnemiesPass = 30; /** Max amount enemies passing map.*/
+        this.maxAmountEnemiesPass = 2; /** Max amount enemies passing map.*/
         this.amountEnemiesPass = 0; /** Amount enemies passing map.*/
         this.timeAddEnemy = 1; /** Time to adding first enemy.*/
         this.isGameOver = false;
 
-        this._startLevel();
-        this._frame();
+        this.startLevel();
     }
 
-    _startLevel() {
-        this.levels.push(new app.map(this.levelNumber));
+    startLevel() {
+        this.map = new app.map(this.levelNumber);
+
+        for (let i=0; i<this.map.level.length; i++) {
+            if (i % 2 === 0) {
+                this.enemyDirecrions.push(this.map.level[i]);
+            } else {
+                this.enemySteps.push(this.map.level[i]);
+            }
+        }
+
+        this._frame();
     }
 
     _frame() {
@@ -70,7 +79,7 @@ export default class GameLoop {
              * @param {number} rate - Time to next shoot.
              * */
             this.towers.push(new app.tower(340, 160, 100, 1));
-            this.towers.push(new app.tower(200, 60, 100, 1));
+            this.towers.push(new app.tower(100, 100, 100, 1));
         }
 
         /**
@@ -79,13 +88,15 @@ export default class GameLoop {
         if (this.amountEnemies < this.maxAmountEnemies) {
             if (this.gameTime > this.timeAddEnemy) {
                 /**
-                 * @param {number} x - In pixels.
-                 * @param {number} y - In pixels.
+                 * @param {number} centerX - In pixels.
+                 * @param {number} centerY - In pixels.
                  * @param {number} speed - In pixels per second.
                  * @param {number} health.
-                 * @param {Array} steps.
+                 * @param {Array} steps - Transfer the array by value.
+                 *
+                 * @todo Create universal start point.
                  * */
-                this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, this.levels[this.levelNumber].level));
+                this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
                 this.amountEnemies++;
                 this.timeAddEnemy += 1;  /** Time to adding next enemy.*/
             }
@@ -97,19 +108,19 @@ export default class GameLoop {
     _updateEnemies() {
         for (let i=0; i<this.enemies.length; i++) {
             this.enemies[i].move(
-                this.incrementDate, this.levels[this.levelNumber].level[this.enemies[i].passedPoints * 2]
+                this.incrementDate, this.enemyDirecrions[this.enemies[i].passedPoints]
             );
             /**
-             * @todo Pass points
+             * Passing points.
              * */
-            if (this.enemies[i].steps[this.enemies[i].passedPoints * 2 + 1] <= 0) {
+            if (this.enemies[i].steps[this.enemies[i].passedPoints] <= 0) {
                 this.enemies[i].passedPoints++;
             }
 
             /**
-             * @todo Create delete anemy when he pass the map
+             * @todo Create delete enemy when he pass the map.
              * */
-            if ((this.enemies[i].x + this.enemies[i].size) < 0) {
+            if (this.enemyDirecrions[this.enemyDirecrions.length - 1] === 'left' && (this.enemies[i].x + this.enemies[i].size) < 0) {
                 this.enemies.splice(i, 1);
                 i--;
                 this.amountEnemiesPass++;
@@ -218,7 +229,7 @@ export default class GameLoop {
          * */
         app.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
 
-        this.levels[this.levelNumber].draw();
+        this.map.draw();
 
         for (let i=0; i<this.towers.length; i++) {
             this.towers[i].draw();
@@ -238,7 +249,7 @@ export default class GameLoop {
     }
 
     _gameOver() {
-        this.gameOverMaskClass = `${this.gameOverMaskClass} show`;
+        document.getElementById('game-over_mask').classList.add('show');
         this.isGameOver = true;
     }
 

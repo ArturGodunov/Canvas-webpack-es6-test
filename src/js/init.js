@@ -8,7 +8,6 @@ export default class Init {
      * */
     constructor() {
         this._playAgain();
-        this._reset();
         this._gameLoop();
     }
 
@@ -21,7 +20,7 @@ export default class Init {
     }
 
     _playAgain() {
-        document.getElementById('play-again').addEventListener('click', function() {
+        document.getElementById('play-again').addEventListener('click', () => {
             this._reset();
         });
     }
@@ -30,7 +29,9 @@ export default class Init {
      * @todo Create method _reset.
      * */
     _reset() {
+        document.getElementById('game-over_mask').classList.remove('show');
 
+        this._gameLoop();
     }
 
     /**
@@ -39,4 +40,5 @@ export default class Init {
     _gameLoop() {
         new app.gameLoop(Date.now(), 0);
     }
+
 };

@@ -32,7 +32,7 @@ exports.explosion = Explosion;
 exports.map = Map;
 
 /**
- * @todo Level map!!!
+ * @todo Level map!!! Create start point.
  * */
 
 

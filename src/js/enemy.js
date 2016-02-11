@@ -5,17 +5,17 @@ export default class Enemy {
 
     /**
      * Create enemy.
-     * @param {number} x - In pixels.
-     * @param {number} y - In pixels.
+     * @param {number} centerX - In pixels.
+     * @param {number} centerY - In pixels.
      * @param {number} speed - In pixels per second.
      * @param {number} health.
      * @param {Array} steps.
      * */
-    constructor(x, y, speed, health, steps) {
-        this.x = x;
-        this.y = y;
+    constructor(centerX, centerY, speed, health, steps) {
+        this.centerX = centerX;
+        this.centerY = centerY;
         this.speed = speed;
-        this.size = 40;
+        this.size = 20;
         this.health = health;
         this.passedPoints = 0;
         this.steps = steps;
@@ -24,8 +24,8 @@ export default class Enemy {
     }
 
     _centerCoord() {
-        this.centerX = this.x + this.size / 2;
-        this.centerY = this.y + this.size / 2;
+        this.x = this.centerX - this.size / 2;
+        this.y = this.centerY - this.size / 2;
     }
 
     /**
@@ -38,20 +38,20 @@ export default class Enemy {
 
         switch (direction) {
             case 'left':
-                this.x -= this.speed * date;
+                this.centerX -= this.speed * date;
                 break;
             case 'right':
-                this.x += this.speed * date;
+                this.centerX += this.speed * date;
                 break;
             case 'up':
-                this.y -= this.speed * date;
+                this.centerY -= this.speed * date;
                 break;
             case 'down':
-                this.y += this.speed * date;
+                this.centerY += this.speed * date;
                 break;
         }
-/*не работает*/
-        this.steps[this.passedPoints * 2 + 1] -= this.speed * date;
+
+        this.steps[this.passedPoints] -= this.speed * date;
     }
 
     draw() {
