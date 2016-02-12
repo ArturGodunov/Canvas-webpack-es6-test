@@ -40,14 +40,6 @@ ol, ul {
 /*
 * MAIN
 ----------------------------------------------------------*/
-.canvas{
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    margin: -200px 0 0 -300px;
-    z-index: 1;
-}
-
 .game-over_mask{
     display: none;
     position: fixed;
@@ -93,4 +85,26 @@ ol, ul {
     background: rgba(255,255,255,0.2);
 }
 
+
+
+.canvas_b{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+.tower{
+    position: absolute;
+    left: -50px;
+    cursor: pointer;
+}
+.tower_1{
+    top: 0;
+}
+.tower_img{
+    display: block;
+}
 /* END MAIN */

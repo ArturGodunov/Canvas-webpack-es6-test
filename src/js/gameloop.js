@@ -96,7 +96,7 @@ export default class GameLoop {
                  *
                  * @todo Create universal start point.
                  * */
-                this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
+                //this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
                 this.amountEnemies++;
                 this.timeAddEnemy += 1;  /** Time to adding next enemy.*/
             }

@@ -9,18 +9,33 @@ export default class Data {
     constructor() {
         this.cache = {};
         this.readyCallBacks = [];
+
         /**
          * @todo When create start point, think about first/last step.
          * */
-        this.levels = [
-            [
-                'left', 200,
-                'down', 200,
-                'left', 200,
-                'up',   100,
-                'left', 220
-            ]
-        ];
+        this._loadLevels();
+    }
+
+    _loadLevels() {
+        let xhr = new XMLHttpRequest();
+
+        xhr.open('GET', 'levels.json', true);
+        xhr.send();
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState != 4) return;
+
+            if (xhr.status != 200) {
+                alert(`${xhr.status}: ${xhr.statusText}`);
+            } else {
+                try {
+                    this.levels = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    alert(`Incorrect answer: ${e.message}`);
+                }
+            }
+
+        }
     }
 
     /**

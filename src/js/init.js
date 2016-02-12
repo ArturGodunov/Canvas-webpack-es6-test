@@ -9,6 +9,7 @@ export default class Init {
     constructor() {
         this._playAgain();
         this._gameLoop();
+        //this._documentReady();
     }
 
     /**
@@ -19,15 +20,23 @@ export default class Init {
         new Init();
     }
 
+    //_documentReady() {
+    //    document.addEventListener('DOMContentLoaded', this._addTowers);
+    //}
+
+    //_addTowers() {
+    //    console.log('qwe3');
+    //    document.getElementsByClassName('tower').addEventListener('click', function() {
+    //        console.log('qwe2');
+    //    });
+    //}
+
     _playAgain() {
         document.getElementById('play-again').addEventListener('click', () => {
             this._reset();
         });
     }
 
-    /**
-     * @todo Create method _reset.
-     * */
     _reset() {
         document.getElementById('game-over_mask').classList.remove('show');
 

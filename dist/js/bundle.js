@@ -99,6 +99,7 @@ var app =
 
 	/**
 	 * @todo Level map!!! Create start point.
+	 * @todo Create adding towers.
 	 * */
 
 /***/ },
@@ -219,7 +220,7 @@ var app =
 	                     *
 	                     * @todo Create universal start point.
 	                     * */
-	                    this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
+	                    //this.enemies.push(new app.enemy(this.canvasWidth, 100, 50, 100, [].concat(this.enemySteps)));
 	                    this.amountEnemies++;
 	                    this.timeAddEnemy += 1; /** Time to adding next enemy.*/
 	                }
@@ -414,25 +415,51 @@ var app =
 
 	        this.cache = {};
 	        this.readyCallBacks = [];
+
 	        /**
 	         * @todo When create start point, think about first/last step.
 	         * */
-	        this.levels = [['left', 200, 'down', 200, 'left', 200, 'up', 100, 'left', 220]];
+	        this._loadLevels();
 	    }
 
-	    /**
-	     * Call the method _load, witch load images.
-	     * @param {string|Array} urlOrArr - Take one url or array of urls.
-	     * */
-
 	    _createClass(Data, [{
+	        key: '_loadLevels',
+	        value: function _loadLevels() {
+	            var _this = this;
+
+	            var xhr = new XMLHttpRequest();
+
+	            xhr.open('GET', 'levels.json', true);
+	            xhr.send();
+
+	            xhr.onreadystatechange = function () {
+	                if (xhr.readyState != 4) return;
+
+	                if (xhr.status != 200) {
+	                    alert(xhr.status + ': ' + xhr.statusText);
+	                } else {
+	                    try {
+	                        _this.levels = JSON.parse(xhr.responseText);
+	                    } catch (e) {
+	                        alert('Incorrect answer: ' + e.message);
+	                    }
+	                }
+	            };
+	        }
+
+	        /**
+	         * Call the method _load, witch load images.
+	         * @param {string|Array} urlOrArr - Take one url or array of urls.
+	         * */
+
+	    }, {
 	        key: 'load',
 	        value: function load(urlOrArr) {
-	            var _this = this;
+	            var _this2 = this;
 
 	            if (urlOrArr instanceof Array) {
 	                urlOrArr.forEach(function (url) {
-	                    _this._load(url);
+	                    _this2._load(url);
 	                });
 	            } else {
 	                this._load(urlOrArr);
@@ -447,7 +474,7 @@ var app =
 	    }, {
 	        key: '_load',
 	        value: function _load(url) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            if (this.cache[url]) {
 	                return cache[url];
@@ -455,15 +482,15 @@ var app =
 	                (function () {
 	                    var img = new Image();
 	                    img.onload = function () {
-	                        _this2.cache[url] = img;
+	                        _this3.cache[url] = img;
 
-	                        if (_this2._isReady()) {
-	                            _this2.readyCallBacks.forEach(function (func) {
+	                        if (_this3._isReady()) {
+	                            _this3.readyCallBacks.forEach(function (func) {
 	                                func();
 	                            });
 	                        }
 	                    };
-	                    _this2.cache[url] = false;
+	                    _this3.cache[url] = false;
 	                    img.src = url;
 	                })();
 	            }
@@ -543,6 +570,7 @@ var app =
 
 	        this._playAgain();
 	        this._gameLoop();
+	        //this._documentReady();
 	    }
 
 	    /**
@@ -552,6 +580,18 @@ var app =
 
 	    _createClass(Init, [{
 	        key: '_playAgain',
+
+	        //_documentReady() {
+	        //    document.addEventListener('DOMContentLoaded', this._addTowers);
+	        //}
+
+	        //_addTowers() {
+	        //    console.log('qwe3');
+	        //    document.getElementsByClassName('tower').addEventListener('click', function() {
+	        //        console.log('qwe2');
+	        //    });
+	        //}
+
 	        value: function _playAgain() {
 	            var _this = this;
 
@@ -559,11 +599,6 @@ var app =
 	                _this._reset();
 	            });
 	        }
-
-	        /**
-	         * @todo Create method _reset.
-	         * */
-
 	    }, {
 	        key: '_reset',
 	        value: function _reset() {

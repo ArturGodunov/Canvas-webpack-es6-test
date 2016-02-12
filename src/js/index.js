@@ -33,6 +33,7 @@ exports.map = Map;
 
 /**
  * @todo Level map!!! Create start point.
+ * @todo Create adding towers.
  * */
 
 
